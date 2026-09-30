@@ -15,7 +15,7 @@
 <style>
 :root{
   box-sizing:border-box;
-  --c-blue:#1F6FC5; --goal:#1F6FC5; --c-yellow:#D4A21A; --c-red:#C62828;
+  --c-blue:#1F6FC5; --tcolor:#1F4E6B; --goal:#1F6FC5; --c-yellow:#D4A21A; --c-red:#C62828;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
   --paper:#EEF1F4; --sheet:#FFFFFF; --ink:#1D2A3A; --sub:#5F6B7A; --rule:#D5DBE2;
@@ -25,7 +25,7 @@
 @media (prefers-color-scheme:dark){:root{
   --paper:#141A22; --sheet:#1C242F; --ink:#E6EBF1; --sub:#9AA6B4; --rule:#2C3643;
   --fill:#5DB7BF; --fill-soft:#1E3A3E; --pace:#E0B45C; --sat:#86A9E6; --sun:#EB8C8C; --empty:#2A323D;
-  --bg-low:#2E333A; --bg-b:#1E3A5F; --bg-y:#4A3E14; --bg-r:#5A2222; --goal:#7FB2F0;}}
+  --bg-low:#2E333A; --bg-b:#1E3A5F; --bg-y:#4A3E14; --bg-r:#5A2222; --goal:#7FB2F0; --tcolor:#6FA9C9;}}
 *,*::before,*::after{box-sizing:inherit}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);
@@ -65,7 +65,13 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .gauge-head #pct{margin-left:auto;font-size:18px;font-weight:700;color:var(--ink)}
 .gauge-head b{font-size:22px;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600}
 .gauge-head span{font-size:13px;color:var(--sub)}
-.track{position:relative;display:flex;gap:3px;height:22px;margin:6px 0 3px;padding:2px;border:2px dashed var(--rule);border-radius:6px}
+.bars{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 8px;margin:6px 0 0}
+.bars .scale{display:flex;justify-content:space-between;margin-top:-2px}
+.bl{font-size:11px;color:var(--sub);white-space:nowrap}
+.track{position:relative;display:flex;gap:3px;height:22px;padding:2px;border:2px dashed var(--rule);border-radius:6px}
+.tbar{height:14px;padding:0 4px;border-left:2px solid transparent;border-right:2px solid transparent}
+.tbar div{position:relative;height:100%;background:var(--empty);border-radius:3px;overflow:hidden}
+.tbar i{position:absolute;inset:0 auto 0 0;width:0;background:var(--tcolor);border-radius:3px;transition:width .5s ease-out}
 .seg{position:relative;height:100%;background:var(--empty);border-radius:3px;overflow:hidden}
 .seg i{position:absolute;inset:0 auto 0 0;width:0;transition:width .5s ease-out}
 .seg.s1 i{background:var(--c-blue)} .seg.s2 i{background:var(--c-yellow)} .seg.s3 i{background:var(--c-red)}
@@ -73,10 +79,8 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .seg b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;
   text-shadow:0 0 2px rgba(120,80,0,.8);opacity:0;transition:opacity .4s}
 .seg.done b{opacity:1}
-.track u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);left:0;opacity:.55}
 .scale{display:flex;justify-content:space-between;font-size:12px;color:var(--sub)}
 .pace{font-size:12px;color:var(--sub)}
-.pace::before{content:"";display:inline-block;width:2px;height:10px;background:var(--ink);opacity:.55;vertical-align:middle;margin-right:4px}
 /* 表 */
 .tablebox{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow:clip}
 table{width:100%;border-collapse:collapse;background:var(--sheet)}
@@ -105,7 +109,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 .bar button{font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:18px;padding:6px 14px}
 .bar button.main{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
 .note{font-size:12px;color:var(--sub);text-align:center;margin-top:12px}
-@media (prefers-reduced-motion:reduce){.seg i,.seg b{transition:none}}
+@media (prefers-reduced-motion:reduce){.seg i,.seg b,.tbar i{transition:none}}
 </style>
 </head>
 <body>
@@ -128,11 +132,17 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
     <div class="gauge-head num"><b><small>Current: </small><span id="current">0</span></b><span id="pct">–</span></div>
     <div class="gauge-sub num"><span>Progress target: <b id="progTarget">0</b></span><span>1 day target: <b id="daily">0</b></span></div>
     <div class="goal num" id="todayGoal"></div>
+    <div class="bars">
+    <span class="bl">Actual</span>
     <div class="track" id="track">
       <div class="seg s1" style="flex:30"><i></i></div><div class="seg s2" style="flex:30"><i></i></div>
       <div class="seg s3" style="flex:30"><i></i></div><div class="seg s4" style="flex:10"><i></i><b>★</b></div>
-      <u id="paceMark"></u></div>
-    <div class="scale num"><span>0</span><span class="pace">progress target</span><span id="scaleMax"></span></div>
+      </div>
+    <span class="bl">Target</span>
+    <div class="tbar"><div><i id="tfill"></i></div></div>
+    <span></span>
+    <div style="padding:0 4px"><div class="scale num"><span>0</span><span></span><span id="scaleMax"></span></div></div>
+    </div>
   </section>
 
   <div class="tablebox">
@@ -292,7 +302,7 @@ function refresh(){
     seg.querySelector("i").style.width = (w*100) + "%";
     seg.classList.toggle("done", w >= 1);
   });
-  document.getElementById("paceMark").style.left = Math.min(100, prog / state.target * 100) + "%";
+  document.getElementById("tfill").style.width = Math.min(100, prog / state.target * 100) + "%";
   document.getElementById("scaleMax").textContent = fmt(state.target);
 }
 document.getElementById("rows").addEventListener("change", e => {
