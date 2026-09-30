@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="theme-color" content="#EEF1F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141A22" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="chant counter">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>chant counter</title>
+<style>
+:root{
+  box-sizing:border-box;
+  --c-blue:#1F6FC5; --goal:#1F6FC5; --c-yellow:#D4A21A; --c-red:#C62828;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --paper:#EEF1F4; --sheet:#FFFFFF; --ink:#1D2A3A; --sub:#5F6B7A; --rule:#D5DBE2;
+  --fill:#1F6F78; --fill-soft:#D6E9EA; --pace:#B7862B; --sat:#2D5EA8; --sun:#B03A3A; --empty:#E3E6EA;
+  --bg-low:#E4E6E9; --bg-b:#D2E3FA; --bg-y:#FBEEBE; --bg-r:#F8D2D0;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#141A22; --sheet:#1C242F; --ink:#E6EBF1; --sub:#9AA6B4; --rule:#2C3643;
+  --fill:#5DB7BF; --fill-soft:#1E3A3E; --pace:#E0B45C; --sat:#86A9E6; --sun:#EB8C8C; --empty:#2A323D;
+  --bg-low:#2E333A; --bg-b:#1E3A5F; --bg-y:#4A3E14; --bg-r:#5A2222; --goal:#7FB2F0;}}
+*,*::before,*::after{box-sizing:inherit}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:system-ui,-apple-system,"Helvetica Neue","Hiragino Sans",sans-serif;
+  font-size:15px;line-height:1.45}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:520px;margin:0 auto;padding:10px 12px 90px}
+h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600;
+  font-size:20px;letter-spacing:.04em;margin:2px 2px 6px}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:8px 12px;margin-bottom:8px}
+.facts{display:grid;grid-template-columns:1.45fr 1fr;gap:6px 10px;margin:0}
+.facts div{display:flex;align-items:baseline;gap:6px;min-width:0}
+.facts .wide{grid-column:1/-1}
+.facts .lb{width:2.6em}
+.facts dt{color:var(--sub);font-size:13px;white-space:nowrap}
+.facts dd{margin:0;font-weight:600}
+.facts input[type=date]{font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);
+  border:1px solid var(--rule);border-radius:6px;padding:1px 4px;min-height:30px;width:100%;min-width:0}
+.facts dd{flex:1;min-width:0}
+.gauge-head b small{font-family:system-ui,-apple-system,sans-serif;font-size:14px}
+.target{display:flex;align-items:baseline;gap:2px}
+.target input{width:6.2em;text-align:left !important;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:transparent;
+  border:0;border-bottom:1px dashed var(--rule);padding:0 2px;text-align:right}
+.plan-h{font-size:12px;color:var(--sub);margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
+.plan{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:2px}
+.plan .ph{font-size:11px;line-height:1.2;color:var(--sub);text-align:center;padding-bottom:6px}
+.plan label{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--sub);white-space:nowrap}
+.plan select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:4px 0;width:100%;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
+/* 達成度グラフ */
+.gauge-head{display:flex;align-items:baseline;gap:8px}
+.gauge-sub{display:flex;flex-wrap:wrap;gap:0 14px;font-size:13px;color:var(--sub);margin-top:1px}
+.gauge-sub b{color:var(--ink);font-weight:600}
+.goal{font-size:14px;font-weight:600;color:var(--goal);margin-top:2px}
+.gauge-head b small{font-size:14px;font-weight:600}
+.gauge-head b span{font-size:inherit;color:inherit}
+.gauge-head em{font-style:normal;font-size:14px;font-weight:600;color:var(--goal)}
+.gauge-head #pct{margin-left:auto;font-size:18px;font-weight:700;color:var(--ink)}
+.gauge-head b{font-size:22px;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600}
+.gauge-head span{font-size:13px;color:var(--sub)}
+.track{position:relative;display:flex;gap:3px;height:22px;margin:6px 0 3px;padding:2px;border:2px dashed var(--rule);border-radius:6px}
+.seg{position:relative;height:100%;background:var(--empty);border-radius:3px;overflow:hidden}
+.seg i{position:absolute;inset:0 auto 0 0;width:0;transition:width .5s ease-out}
+.seg.s1 i{background:var(--c-blue)} .seg.s2 i{background:var(--c-yellow)} .seg.s3 i{background:var(--c-red)}
+.seg.s4 i{background:linear-gradient(135deg,#F4DC8A,#C99A2E 55%,#E9C865)}
+.seg b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;
+  text-shadow:0 0 2px rgba(120,80,0,.8);opacity:0;transition:opacity .4s}
+.seg.done b{opacity:1}
+.track u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);left:0;opacity:.55}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--sub)}
+.pace{font-size:12px;color:var(--sub)}
+.pace::before{content:"";display:inline-block;width:2px;height:10px;background:var(--ink);opacity:.55;vertical-align:middle;margin-right:4px}
+/* 表 */
+.tablebox{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow:clip}
+table{width:100%;border-collapse:collapse;background:var(--sheet)}
+thead th{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--sheet);font-size:12px;font-weight:500;color:var(--sub);
+  text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)}
+thead th:first-child{text-align:left}
+td{padding:2px 8px;border-bottom:1px solid var(--rule);text-align:right;height:34px}
+td:first-child{text-align:left;white-space:nowrap}
+tr.today td{background:var(--fill-soft)}
+tr.month td{height:auto;padding:4px 8px;font-size:13px;text-align:left;font-weight:600;border-bottom:1px solid var(--rule);background:var(--paper)}
+.dw{font-size:12px;color:var(--sub);margin-left:3px}
+.w5 .dw{color:var(--sat)} .w6 .dw,.hol .dw{color:var(--sun)}
+td select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);
+  border-radius:6px;padding:1px 2px;width:4.6em;text-align:right}
+td select.empty{color:var(--sub)}
+.tot{color:var(--sub)}
+td.tot.low{background:var(--bg-low)} td.tot.ob{background:var(--bg-b);color:var(--ink)}
+td.tot.oy{background:var(--bg-y);color:var(--ink)} td.tot.or{background:var(--bg-r);color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:11px;color:var(--sub);padding:8px 10px;border-bottom:1px solid var(--rule)}
+#dailyPace{margin-left:0}
+#dailyPace::before{display:none}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:-1px;background:var(--sw)}
+select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--fill);outline-offset:2px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;gap:8px;justify-content:center;
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1px solid var(--rule)}
+.bar button{font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:18px;padding:6px 14px}
+.bar button.main{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
+.note{font-size:12px;color:var(--sub);text-align:center;margin-top:12px}
+@media (prefers-reduced-motion:reduce){.seg i,.seg b{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>chant counter</h1>
+
+  <section class="panel">
+    <dl class="facts num">
+      <div><dt class="lb">Start:</dt><dd><input id="start" type="date" aria-label="Start date"></dd></div>
+      <div><dt>Total days:</dt><dd id="totalDays"></dd></div>
+      <div><dt class="lb">End:</dt><dd><input id="end" type="date" aria-label="End date"></dd></div>
+      <div><dt>Countdown:</dt><dd id="countdown"></dd></div>
+      <div class="wide"><dt>Target:</dt><dd class="target"><input id="target" type="text" inputmode="numeric" aria-label="Target chants"> chants</dd></div>
+    </dl>
+    <div class="plan-h">Target time</div>
+    <div class="plan" id="plan"></div>
+  </section>
+
+  <section class="panel" aria-label="Progress">
+    <div class="gauge-head num"><b><small>Current: </small><span id="current">0</span></b><span id="pct">–</span></div>
+    <div class="gauge-sub num"><span>Progress target: <b id="progTarget">0</b></span><span>1 day target: <b id="daily">0</b></span></div>
+    <div class="goal num" id="todayGoal"></div>
+    <div class="track" id="track">
+      <div class="seg s1" style="flex:30"><i></i></div><div class="seg s2" style="flex:30"><i></i></div>
+      <div class="seg s3" style="flex:30"><i></i></div><div class="seg s4" style="flex:10"><i></i><b>★</b></div>
+      <u id="paceMark"></u></div>
+    <div class="scale num"><span>0</span><span class="pace">progress target</span><span id="scaleMax"></span></div>
+  </section>
+
+  <div class="tablebox">
+  <div class="legend num"><span style="--sw:var(--bg-low)">30%+ behind</span><span style="--sw:var(--bg-b)">10%+ ahead</span><span style="--sw:var(--bg-y)">20%+ ahead</span><span style="--sw:var(--bg-r)">30%+ ahead</span></div>
+  <table class="num">
+    <thead><tr><th>Calendar</th><th>time</th><th>count</th><th>total</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  </div>
+  <p class="note">Records are saved only on this phone. Use "Backup" before changing phones.</p>
+</div>
+
+<div class="bar">
+  <button class="main" id="todayBtn">Today</button>
+  <button id="exportBtn">Backup</button>
+  <button id="importBtn">Restore</button>
+  <input id="importFile" type="file" accept="application/json,.json" hidden>
+</div>
+
+<script>
+const CFG = {"start": "2026-09-29", "end": "2026-12-31", "target": 1000000, "perHour": 3400, "plan": {"mon": 5, "tue": 3, "wed": 5, "thu": 3, "fri": 7, "sat": 3, "sun": 2, "hol": 2}, "hours": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}]};
+const KEY = "chant-counter-en-v1";
+const WD = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const PLAN_ITEMS = [["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],["fri","Fri"],["sat","Sat"],["sun","Sun"],["hol","Hol"]];
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const hTxt = h => String(h).replace(/\.0$/,"") + "h";
+
+// ---- storage ----
+let state = { entries:{}, plan:{...CFG.plan}, target: CFG.target, start: CFG.start, end: CFG.end };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) state = { ...state, ...s, plan:{...CFG.plan, ...(s.plan||{})} }; } catch(e) {}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ alert("Could not save. Please turn off Private Browsing."); } }
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+const TIME = {}; CFG.times.forEach(t => TIME[t.m] = t);
+const countOf = m => TIME[m] ? TIME[m].count : Math.round(m/60*CFG.perHour);
+
+// ---- dates ----
+const pad = n => String(n).padStart(2,"0");
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse = s => new Date(Number(s.slice(0,4)), Number(s.slice(5,7))-1, Number(s.slice(8,10)));
+const todayISO = iso(new Date());
+const md = s => Number(s.slice(5,7))+"/"+Number(s.slice(8));
+const dayDiff = (a,b) => Math.round((parse(b) - parse(a))/86400000);
+const wdMon = d => (d.getDay()+6)%7;
+
+// ---- Japanese public holidays (auto) ----
+const holCache = {};
+function holidaysOf(y){
+  if (holCache[y]) return holCache[y];
+  const h = {};
+  const add = (m,d) => { h[y+"-"+pad(m)+"-"+pad(d)] = 1; };
+  const nthMon = (m,n) => { const f = new Date(y,m-1,1).getDay(); return 1 + ((8-f)%7) + (n-1)*7; };
+  add(1,1); add(1,nthMon(1,2)); add(2,11); add(2,23);
+  add(3,Math.floor(20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4)));
+  add(4,29); add(5,3); add(5,4); add(5,5); add(7,nthMon(7,3)); add(8,11); add(9,nthMon(9,3));
+  add(9,Math.floor(23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4)));
+  add(10,nthMon(10,2)); add(11,3); add(11,23);
+  Object.keys(h).forEach(k => { const d = parse(k); d.setDate(d.getDate()+2);
+    if (h[iso(d)]) { const mid = parse(k); mid.setDate(mid.getDate()+1);
+      if (!h[iso(mid)] && mid.getDay() !== 0) h[iso(mid)] = 1; } });
+  Object.keys(h).sort().forEach(k => { const d = parse(k); if (d.getDay() === 0) {
+    do { d.setDate(d.getDate()+1); } while (h[iso(d)]); h[iso(d)] = 1; } });
+  return holCache[y] = h;
+}
+const isHoliday = s => !!holidaysOf(Number(s.slice(0,4)))[s];
+
+// ---- days in period ----
+let DAYS = [];
+function makeDays(){
+  DAYS = [];
+  const d = parse(state.start), e = parse(state.end);
+  while (d <= e) { const s = iso(d); DAYS.push([s, wdMon(d), isHoliday(s)]); d.setDate(d.getDate()+1); }
+}
+const planKey = d => d[2] ? "hol" : ["mon","tue","wed","thu","fri","sat","sun"][d[1]];
+
+// ---- top settings ----
+const startIn = document.getElementById("start"), endIn = document.getElementById("end");
+startIn.value = state.start; endIn.value = state.end;
+function changePeriod(){
+  const s = startIn.value, e = endIn.value;
+  const reset = () => { startIn.value = state.start; endIn.value = state.end; };
+  if (!s || !e) return reset();
+  if (s > e) { alert("Start must be on or before End."); return reset(); }
+  if (dayDiff(s,e) > 730) { alert("Please keep the period within 2 years."); return reset(); }
+  state.start = s; state.end = e; save(); buildRows(); refresh(); jumpToday();
+}
+startIn.addEventListener("change", changePeriod);
+endIn.addEventListener("change", changePeriod);
+
+const tgt = document.getElementById("target");
+const showTarget = () => tgt.value = fmt(state.target);
+showTarget();
+tgt.addEventListener("focus", () => { tgt.value = String(state.target); });
+tgt.addEventListener("blur", showTarget);
+tgt.addEventListener("change", () => { const v = Number(tgt.value.replace(/[^0-9]/g,"")); if (v > 0){ state.target = v; save(); refresh(); } showTarget(); });
+
+document.getElementById("plan").innerHTML = PLAN_ITEMS.map(([k,l]) =>
+  `<label>${l}<select data-plan="${k}" aria-label="${l} target time">${CFG.hours.map(h=>`<option value="${h}">${hTxt(h)}</option>`).join("")}</select></label>`).join("");
+document.querySelectorAll("select[data-plan]").forEach(s => {
+  s.value = String(state.plan[s.dataset.plan]);
+  s.addEventListener("change", () => { state.plan[s.dataset.plan] = Number(s.value); save(); refresh(); });
+});
+
+// ---- table ----
+const timeOpts = '<option value="">—</option>' + CFG.times.map(t => `<option value="${t.m}">${t.label}</option>`).join("");
+function buildRows(){
+  makeDays();
+  let html = "", lastMonth = "";
+  DAYS.forEach(([date, wd, hol]) => {
+    const mk = date.slice(0,7);
+    if (mk !== lastMonth){ lastMonth = mk; html += `<tr class="month"><td colspan="4">${MONTHS[Number(mk.slice(5))-1]} ${mk.slice(0,4)}</td></tr>`; }
+    const cls = hol ? "hol" : wd===5 ? "w5" : wd===6 ? "w6" : "";
+    html += `<tr id="r${date}" class="${date===todayISO?"today":""}">
+      <td class="${cls}">${md(date)}<span class="dw">${WD[wd]}${hol?" Hol":""}</span></td>
+      <td><select data-date="${date}" aria-label="time on ${md(date)}">${timeOpts}</select></td>
+      <td id="c${date}"></td><td class="tot" id="t${date}"></td></tr>`;
+  });
+  document.getElementById("rows").innerHTML = html;
+}
+
+// ---- calculation ----
+function refresh(){
+  const totalDays = DAYS.length;
+  const daily = state.target / Math.max(1, totalDays);           // e.g. 1,000,000 / 94 days
+  let total = 0, current = 0;
+  DAYS.forEach((d, i) => {
+    const date = d[0], m = state.entries[date] || 0, c = m ? countOf(m) : 0;
+    total += c; if (date <= todayISO) current = total;
+    const sel = document.querySelector(`select[data-date="${date}"]`);
+    sel.value = m ? String(m) : ""; sel.classList.toggle("empty", !m);
+    document.getElementById("c"+date).textContent = m ? fmt(c) : "";
+    const tc = document.getElementById("t"+date);
+    tc.className = "tot";
+    if (date <= todayISO) {
+      tc.textContent = fmt(total);
+      const r = total / (daily * (i+1));
+      tc.classList.add(r < 0.7 ? "low" : r > 1.3 ? "or" : r > 1.2 ? "oy" : r > 1.1 ? "ob" : "x");
+    } else tc.textContent = "";
+  });
+  if (todayISO < state.start) current = 0;
+  const elapsed = Math.max(0, Math.min(totalDays, dayDiff(state.start, todayISO) + 1));
+  const prog = daily * elapsed;
+  document.getElementById("totalDays").textContent = totalDays;
+  document.getElementById("countdown").textContent = Math.max(0, dayDiff(todayISO, state.end));
+  document.getElementById("current").textContent = fmt(current);
+  document.getElementById("progTarget").textContent = fmt(prog);
+  document.getElementById("daily").textContent = fmt(daily);
+  document.getElementById("pct").textContent = prog > 0 ? Math.round(current / prog * 100) + "%" : "–";
+  const td = [todayISO, wdMon(new Date()), isHoliday(todayISO)];
+  const th = state.plan[planKey(td)];
+  document.getElementById("todayGoal").textContent =
+    "Today target: " + (td[2] ? "Hol" : WD[td[1]]) + " " + hTxt(th) + " " + fmt(th * CFG.perHour);
+  const pct = current / state.target * 100;
+  [[0,30],[30,60],[60,90],[90,100]].forEach(([a,b], k) => {
+    const seg = document.querySelectorAll("#track .seg")[k];
+    const w = Math.max(0, Math.min(1, (pct - a) / (b - a)));
+    seg.querySelector("i").style.width = (w*100) + "%";
+    seg.classList.toggle("done", w >= 1);
+  });
+  document.getElementById("paceMark").style.left = Math.min(100, prog / state.target * 100) + "%";
+  document.getElementById("scaleMax").textContent = fmt(state.target);
+}
+document.getElementById("rows").addEventListener("change", e => {
+  const s = e.target.closest("select[data-date]"); if (!s) return;
+  if (s.value) state.entries[s.dataset.date] = Number(s.value); else delete state.entries[s.dataset.date];
+  save(); refresh();
+});
+
+// ---- jump to today ----
+function jumpToday(){
+  if (!DAYS.length) return;
+  const first = DAYS[0][0], last = DAYS[DAYS.length-1][0];
+  const t = todayISO < first ? first : todayISO > last ? last : todayISO;
+  const row = document.getElementById("r"+t);
+  if (row) row.scrollIntoView({block:"center"});
+}
+document.getElementById("todayBtn").addEventListener("click", jumpToday);
+
+// ---- backup / restore ----
+document.getElementById("exportBtn").addEventListener("click", async () => {
+  const name = "chant_counter_backup_" + todayISO + ".json";
+  const file = new File([JSON.stringify(state)], name, {type:"application/json"});
+  if (navigator.canShare && navigator.canShare({files:[file]})) {
+    try { await navigator.share({files:[file], title:name}); return; } catch(e) { if (e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+const fileIn = document.getElementById("importFile");
+document.getElementById("importBtn").addEventListener("click", () => fileIn.click());
+fileIn.addEventListener("change", async () => {
+  const f = fileIn.files[0]; if (!f) return;
+  try {
+    const s = JSON.parse(await f.text());
+    if (!s || typeof s.entries !== "object") throw new Error();
+    if (!confirm("Replace the current records with this backup?")) return;
+    // Japanese-version backups are converted automatically
+    if (s.unit !== "m") { const e = {}; Object.entries(s.entries).forEach(([k,v]) => e[k] = Math.round(v*60)); s.entries = e; }
+    const plan = {...CFG.plan, ...(s.plan||{})};
+    if (s.plan && s.plan.weh != null) { plan.sat = plan.sun = plan.hol = s.plan.weh; delete plan.weh; }
+    state = { unit:"m", entries:s.entries, plan,
+              target: s.target || (s.targetMan ? s.targetMan * 10000 : CFG.target),
+              start: s.start || state.start, end: s.end || state.end };
+    save(); showTarget(); startIn.value = state.start; endIn.value = state.end;
+    document.querySelectorAll("select[data-plan]").forEach(x => x.value = String(state.plan[x.dataset.plan]));
+    buildRows(); refresh(); jumpToday(); alert("Restored.");
+  } catch(e) { alert("This file cannot be read. Please choose a .json file saved with Backup."); }
+  fileIn.value = "";
+});
+
+buildRows();
+refresh();
+requestAnimationFrame(jumpToday);
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
