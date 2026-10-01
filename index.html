@@ -159,6 +159,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   <button class="main" id="todayBtn">Today</button>
   <button id="exportBtn">Backup</button>
   <button id="importBtn">Restore</button>
+  <button id="reloadBtn" aria-label="Refresh">⟳</button>
   <input id="importFile" type="file" accept="application/json,.json" hidden>
 </div>
 
@@ -374,6 +375,11 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
     if (hadController && !reloaded) { reloaded = true; location.reload(); }   // 新しい版に切り替わったら読み込み直す
   });
 }
+// ---- 手動の更新ボタン（ホーム画面アプリは引っ張って更新ができないため）----
+document.getElementById("reloadBtn").addEventListener("click", async () => {
+  try { if (swReg) await swReg.update(); } catch(e) {}
+  location.reload();
+});
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) return;
   checkDay();
