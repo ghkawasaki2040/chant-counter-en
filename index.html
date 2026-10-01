@@ -183,7 +183,7 @@ const countOf = m => TIME[m] ? TIME[m].count : Math.round(m/60*CFG.perHour);
 const pad = n => String(n).padStart(2,"0");
 const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const parse = s => new Date(Number(s.slice(0,4)), Number(s.slice(5,7))-1, Number(s.slice(8,10)));
-const todayISO = iso(new Date());
+let todayISO = iso(new Date());          // 日付が変わったら更新する
 const md = s => Number(s.slice(5,7))+"/"+Number(s.slice(8));
 const dayDiff = (a,b) => Math.round((parse(b) - parse(a))/86400000);
 const wdMon = d => (d.getDay()+6)%7;
@@ -357,7 +357,28 @@ fileIn.addEventListener("change", async () => {
 buildRows();
 refresh();
 requestAnimationFrame(jumpToday);
-if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js");
+// ---- 日付が変わったとき（アプリを開きっぱなし・待機から復帰）に今日を更新 ----
+function checkDay(){
+  const t = iso(new Date());
+  if (t !== todayISO) { todayISO = t; buildRows(); refresh(); jumpToday(); }
+}
+setInterval(checkDay, 60000);
+
+// ---- オフライン対応と自動アップデート ----
+let swReg = null;
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register("sw.js").then(r => { swReg = r; }).catch(() => {});
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hadController && !reloaded) { reloaded = true; location.reload(); }   // 新しい版に切り替わったら読み込み直す
+  });
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  checkDay();
+  if (swReg) swReg.update().catch(() => {});                                  // 新しい版がないか確認
+});
 </script>
 </body>
 </html>
