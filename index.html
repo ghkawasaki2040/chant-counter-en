@@ -129,6 +129,24 @@ td.tot.oy{background:var(--bg-y);color:var(--ink)} td.tot.or{background:var(--bg
 #dailyPace{margin-left:0}
 #dailyPace::before{display:none}
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:-1px;background:var(--sw)}
+/* 初回のパスワード入力画面 */
+.gate{position:fixed;inset:0;z-index:100;background:var(--paper);overflow:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(20px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.gbox{max-width:480px;margin:0 auto;background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:16px}
+.gbox h2{font-size:18px;margin:0 0 8px}
+.gbox ul,.notice ul{margin:0;padding-left:1.2em;font-size:13px;line-height:1.6;color:var(--ink)}
+.gbox li,.notice li{margin:4px 0}
+.ghint{font-size:12px;color:var(--sub);margin:10px 0}
+.glab{display:block;font-size:13px;color:var(--sub);margin-top:10px}
+.glab input{display:block;width:100%;margin-top:4px;font:inherit;font-size:16px;color:var(--ink);background:var(--paper);
+  border:1px solid var(--rule);border-radius:8px;padding:8px 10px}
+#gBtn{display:block;width:100%;margin-top:12px;font:inherit;font-size:16px;font-weight:700;color:#fff;background:#1D2A3A;border:0;border-radius:10px;padding:10px}
+#gBtn:disabled{opacity:.4}
+.gerr{color:#C62828;font-size:13px;min-height:1.2em;margin:8px 0 0}
+body.locked{overflow:hidden}
+.notice{max-width:520px;margin:10px auto 0;font-size:12px;color:var(--sub)}
+.notice summary{cursor:pointer;text-align:center}
+.notice ul{color:var(--sub);font-size:12px;margin-top:6px}
 select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--fill);outline-offset:2px}
 /* ボタン：iPhone で位置がずれないよう、画面に固定せず表のすぐ上に置く */
 .bar{display:flex;gap:8px;justify-content:center;margin:0 0 8px}
@@ -139,6 +157,11 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 </style>
 </head>
 <body>
+<div id="gate" class="gate" hidden><div class="gbox">
+  <h2 id="gTitle"></h2><ul id="gList"></ul><p class="ghint" id="gHint"></p>
+  <label class="glab"><span id="gLabel"></span><input id="gPass" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+  <button id="gBtn"></button><p class="gerr" id="gErr" role="alert"></p>
+</div></div>
 <div class="wrap">
   <h1>chant counter</h1>
 
@@ -197,11 +220,12 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   </table>
   </div>
   <p class="note">Records are saved only on this phone. Use "Backup" before changing phones.</p>
+  <details class="notice"><summary id="nSum"></summary><ul id="nList"></ul></details>
 </div>
 
 
 <script>
-const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-01-01", "dateMax": "2035-12-31", "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}]};
+const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-01-01", "dateMax": "2035-12-31", "codes": [{"hash": "7a7fc9b3", "until": "2026-10-31"}], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}]};
 const KEY = "chant-counter-en-v1";
 const WD = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -253,6 +277,54 @@ let todayISO = iso(new Date());          // 日付が変わったら更新する
 const md = s => Number(s.slice(5,7))+"/"+Number(s.slice(8));
 const dayDiff = (a,b) => Math.round((parse(b) - parse(a))/86400000);
 const wdMon = d => (d.getDay()+6)%7;
+const GATE = {
+  title: "Before you use this app",
+  items: [
+    "This app is for invited guests only. Please do not share the URL or password.",
+    "This app is provided free of charge, without any guarantee of its operation or the accuracy of its calculations. Please use it at your own discretion and risk.",
+    "Your records are saved only on your phone and are never sent anywhere. The creator cannot see your records.",
+    "Records may be lost if you delete the app, clear Safari's history, or change phones. Please use \"Backup\" to save important records.",
+    "You can also keep a record by taking screenshots, for example when you reach your target or at the end of each month.",
+    "The content of this app may be changed or discontinued without notice.",
+    "The creator is not responsible for any damages arising from the use of this app.",
+    "Individual support is not provided.",
+  ],
+  hint: "First add this app to your Home Screen (Safari share button → Add to Home Screen), then enter the password in the app opened from the Home Screen icon.",
+  label: "Password", button: "Agree and start",
+  wrong: "The password is incorrect.", closed: "Registration for new users has closed.",
+};
+
+// ---- 初回のパスワード入力（受付期限つき）----
+(function(){
+  const fnv = str => { let h = 0x811c9dc5; for (const b of new TextEncoder().encode(str)) { h ^= b; h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, "0"); };
+  const $ = id => document.getElementById(id);
+  const li = GATE.items.map(t => `<li>${t}</li>`).join("");
+  $("gTitle").textContent = GATE.title; $("nSum").textContent = GATE.title;
+  $("gList").innerHTML = li; $("nList").innerHTML = li;
+  $("gHint").textContent = GATE.hint; $("gLabel").textContent = GATE.label; $("gBtn").textContent = GATE.button;
+  const AKEY = KEY + "-auth";
+  let ok = false;
+  try {
+    ok = !!localStorage.getItem(AKEY);
+    // この更新の前から使っている人は、そのまま使えるようにする
+    if (!ok && localStorage.getItem(KEY)) { localStorage.setItem(AKEY, JSON.stringify({ at: "existing" })); ok = true; }
+  } catch(e) {}
+  if (ok) return;
+  const gate = $("gate"); gate.hidden = false; document.body.classList.add("locked");
+  const d = new Date(), today = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  const open = CFG.codes.filter(c => today <= c.until);
+  if (!open.length) { $("gErr").textContent = GATE.closed; $("gPass").disabled = true; $("gBtn").disabled = true; return; }
+  const tryPass = () => {
+    const h = fnv("chant:" + $("gPass").value.trim());
+    if (!open.some(c => c.hash === h)) { $("gErr").textContent = GATE.wrong; return; }
+    try { localStorage.setItem(AKEY, JSON.stringify({ at: today })); } catch(e) {}
+    gate.hidden = true; document.body.classList.remove("locked");
+    if (typeof jumpToday === "function") requestAnimationFrame(jumpToday);
+    if (typeof jumpNow === "function") requestAnimationFrame(jumpNow);
+  };
+  $("gBtn").addEventListener("click", tryPass);
+  $("gPass").addEventListener("keydown", e => { if (e.key === "Enter") tryPass(); });
+})();
 
 // ---- Japanese public holidays (auto) ----
 const holCache = {};
@@ -404,13 +476,19 @@ function refresh(){
   });
   document.getElementById("tfill").style.width = Math.min(100, prog / P().target * 100) + "%";
   document.getElementById("scaleMax").textContent = fmt(P().target);
-  // 1day.time count：期間内の各日の時間を 1h〜12h に分類（1h未満は数えない、0.5h は切り上げ）
-  const tc = Array(13).fill(0);
-  DAYS.forEach(d => { const m = state.entries[d[0]] || 0; if (m >= 60) tc[Math.min(12, Math.ceil(m / 60))]++; });
+  // 1day.time count：0.5h・1h・1.5h・2h・3h…9h・10h~ に切り捨てで分類（30分未満は数えない）
+  const TCB = ["0.5h","1h","1.5h","2h","3h","4h","5h","6h","7h","8h","9h","10h~"];
+  const tc = Array(TCB.length).fill(0);
+  DAYS.forEach(d => {
+    const m = state.entries[d[0]] || 0;
+    if (m < 30) return;
+    const k = m < 60 ? 0 : m < 90 ? 1 : m < 120 ? 2 : m < 600 ? Math.floor(m / 60) + 1 : 11;
+    tc[k]++;
+  });
   let tcHtml = "";
-  [[1,6],[7,12]].forEach(([a,b]) => {
-    for (let h = a; h <= b; h++) tcHtml += `<span>${h}h</span>`;
-    for (let h = a; h <= b; h++) tcHtml += `<b class="${tc[h] ? "" : "z"}">${tc[h]}</b>`;
+  [[0,5],[6,11]].forEach(([a,b]) => {
+    for (let k = a; k <= b; k++) tcHtml += `<span>${TCB[k]}</span>`;
+    for (let k = a; k <= b; k++) tcHtml += `<b class="${tc[k] ? "" : "z"}">${tc[k]}</b>`;
   });
   document.getElementById("tcount").innerHTML = tcHtml;
   renderPeriods();
