@@ -32,7 +32,7 @@ body{margin:0;background:var(--paper);color:var(--ink);
   font-family:system-ui,-apple-system,"Helvetica Neue","Hiragino Sans",sans-serif;
   font-size:15px;line-height:1.45}
 .num{font-variant-numeric:tabular-nums}
-.wrap{max-width:520px;margin:0 auto;padding:10px 12px 90px}
+.wrap{max-width:520px;margin:0 auto;padding:10px 12px 12px}
 h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600;
   font-size:20px;letter-spacing:.04em;margin:2px 2px 6px}
 .panel{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:8px 12px;margin-bottom:8px}
@@ -129,7 +129,8 @@ td.tot.oy{background:var(--bg-y);color:var(--ink)} td.tot.or{background:var(--bg
 #dailyPace::before{display:none}
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:-1px;background:var(--sw)}
 select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--fill);outline-offset:2px}
-.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;gap:8px;justify-content:center;
+/* 下のボタン：iPhone でプルダウンを閉じた後に位置がずれないよう、fixed ではなく sticky で画面下に固定 */
+.bar{position:sticky;bottom:0;z-index:5;display:flex;gap:8px;justify-content:center;
   padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1px solid var(--rule)}
 .bar button{font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:18px;padding:6px 14px}
 .bar button.main{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
@@ -237,6 +238,10 @@ let state = { unit:"m", entries:{}, periods:[newPeriod()], cur:0 };
 try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) state = periodize(upgrade(s)); } catch(e) {}
 const P = () => state.periods[state.cur];
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ alert("Could not save. Please turn off Private Browsing."); } }
+// iPhone：プルダウン（ドラム）を閉じた後に画面のずれを元に戻す
+document.addEventListener("focusout", e => {
+  if (e.target.matches && e.target.matches("select, input")) setTimeout(() => window.scrollTo(window.scrollX, window.scrollY), 50);
+});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 const TIME = {}; CFG.times.forEach(t => TIME[t.m] = t);
 const countOf = m => TIME[m] ? TIME[m].count : Math.round(m/60*CFG.perHour);
