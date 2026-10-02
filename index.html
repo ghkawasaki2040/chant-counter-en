@@ -70,6 +70,7 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .tc span{font-size:12px;color:var(--sub);padding-top:2px}
 .tc b{font-size:16px;font-weight:600;padding-bottom:4px;border-bottom:1px solid var(--rule)}
 .tc b.z{color:var(--sub);font-weight:400}
+.plan-panel .plan-h{margin-top:0;padding-top:0;border-top:0}
 .plan-h{font-size:12px;color:var(--sub);margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
 .plan{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:2px}
 .plan .ph{font-size:11px;line-height:1.2;color:var(--sub);text-align:center;padding-bottom:6px}
@@ -153,10 +154,6 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
       <div><dt>Countdown:</dt><dd id="countdown"></dd></div>
       <div class="wide"><dt>Target:</dt><dd class="target tsel"><select id="targetSel" aria-label="Target chants"></select> chants</dd></div>
     </dl>
-    <div class="plan-h">Target time</div>
-    <div class="plan" id="plan"></div>
-    <div class="tc-h">1day.time count</div>
-    <div class="tc num" id="tcount" aria-label="Days by daily time"></div>
   </section>
 
   <section class="panel" aria-label="Progress">
@@ -174,6 +171,13 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
     <span></span>
     <div><div class="scale num"><span>0</span><span></span><span id="scaleMax"></span></div></div>
     </div>
+  </section>
+
+  <section class="panel plan-panel">
+    <div class="plan-h">Target time</div>
+    <div class="plan" id="plan"></div>
+    <div class="tc-h">1day.time count</div>
+    <div class="tc num" id="tcount" aria-label="Days by daily time"></div>
   </section>
 
   <div class="tablebox">
@@ -414,8 +418,12 @@ function jumpToday(){
   if (!DAYS.length) return;
   const first = DAYS[0][0], last = DAYS[DAYS.length-1][0];
   const t = todayISO < first ? first : todayISO > last ? last : todayISO;
-  const row = document.getElementById("r"+t);
-  if (row) row.scrollIntoView({block:"center"});
+  // 今日の2日前の行が、表の見出しのすぐ下に来るように表示
+  const idx = DAYS.findIndex(d => d[0] === t);
+  const row = document.getElementById("r" + DAYS[Math.max(0, idx - 2)][0]);
+  if (!row) return;
+  const head = document.querySelector("thead").offsetHeight;
+  window.scrollTo({ top: Math.max(0, row.getBoundingClientRect().top + window.scrollY - head - 4) });
 }
 document.getElementById("todayBtn").addEventListener("click", jumpToday);
 
