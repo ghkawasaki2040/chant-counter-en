@@ -45,7 +45,7 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .facts dd{margin:0;font-weight:600}
 .facts input[type=date]{font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:var(--paper);
   border:1px solid var(--rule);border-radius:6px;padding:0 3px;min-height:28px;width:100%;min-width:0;letter-spacing:-.02em}
-.facts dd{flex:1;min-width:0}
+.facts dd{flex:1;min-width:0;white-space:nowrap}
 .gauge-head b small{font-family:system-ui,-apple-system,sans-serif;font-size:14px}
 .target{display:flex;align-items:baseline;gap:2px}
 .target input{width:6.2em;text-align:left !important;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:transparent;
@@ -183,7 +183,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   </section>
 
   <div class="tablebox">
-  <div class="legend num"><span style="--sw:var(--bg-low)">30%+ behind</span><span style="--sw:var(--bg-b)">10%+ ahead</span><span style="--sw:var(--bg-y)">20%+ ahead</span><span style="--sw:var(--bg-r)">30%+ ahead</span></div>
+  <div class="legend num"><span style="--sw:var(--bg-low)">30%−</span><span style="--sw:var(--bg-b)">10%+</span><span style="--sw:var(--bg-y)">20%+</span><span style="--sw:var(--bg-r)">30%+</span></div>
   <table class="num">
     <thead><tr><th>Calendar</th><th>time</th><th>count</th><th>total</th></tr></thead>
     <tbody id="rows"></tbody>
