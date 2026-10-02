@@ -32,7 +32,7 @@ body{margin:0;background:var(--paper);color:var(--ink);
   font-family:system-ui,-apple-system,"Helvetica Neue","Hiragino Sans",sans-serif;
   font-size:15px;line-height:1.45}
 .num{font-variant-numeric:tabular-nums}
-.wrap{max-width:520px;margin:0 auto;padding:10px 12px 12px}
+.wrap{max-width:520px;margin:0 auto;padding:10px 12px calc(16px + env(safe-area-inset-bottom,0px))}
 h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600;
   font-size:20px;letter-spacing:.04em;margin:2px 2px 6px}
 .panel{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:8px 12px;margin-bottom:8px}
@@ -124,14 +124,14 @@ td select.empty{color:var(--sub)}
 .tot{color:var(--sub)}
 td.tot.low{background:var(--bg-low)} td.tot.ob{background:var(--bg-b);color:var(--ink)}
 td.tot.oy{background:var(--bg-y);color:var(--ink)} td.tot.or{background:var(--bg-r);color:var(--ink)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:11px;color:var(--sub);padding:8px 10px;border-bottom:1px solid var(--rule)}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.legend{display:flex;gap:6px;font-size:11px;font-weight:400;color:var(--sub);white-space:nowrap}
 #dailyPace{margin-left:0}
 #dailyPace::before{display:none}
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:-1px;background:var(--sw)}
 select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--fill);outline-offset:2px}
-/* 下のボタン：iPhone でプルダウンを閉じた後に位置がずれないよう、fixed ではなく sticky で画面下に固定 */
-.bar{position:sticky;bottom:0;z-index:5;display:flex;gap:8px;justify-content:center;
-  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1px solid var(--rule)}
+/* ボタン：iPhone で位置がずれないよう、画面に固定せず表のすぐ上に置く */
+.bar{display:flex;gap:8px;justify-content:center;margin:0 0 8px}
 .bar button{font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:18px;padding:6px 14px}
 .bar button.main{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
 .note{font-size:12px;color:var(--sub);text-align:center;margin-top:12px}
@@ -183,8 +183,14 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
     <div class="tc num" id="tcount" aria-label="Days by daily time"></div>
   </section>
 
+  <div class="bar">
+  <button class="main" id="todayBtn">Today</button>
+  <button id="exportBtn">Backup</button>
+  <button id="importBtn">Restore</button>
+  <button id="reloadBtn" aria-label="Refresh">⟳</button>
+  <input id="importFile" type="file" accept="application/json,.json" hidden>
+  </div>
   <div class="tablebox">
-  <div class="legend num"><span style="--sw:var(--bg-low)">30%−</span><span style="--sw:var(--bg-b)">10%+</span><span style="--sw:var(--bg-y)">20%+</span><span style="--sw:var(--bg-r)">30%+</span></div>
   <table class="num">
     <thead><tr><th>Calendar</th><th>time</th><th>count</th><th>total</th></tr></thead>
     <tbody id="rows"></tbody>
@@ -193,13 +199,6 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   <p class="note">Records are saved only on this phone. Use "Backup" before changing phones.</p>
 </div>
 
-<div class="bar">
-  <button class="main" id="todayBtn">Today</button>
-  <button id="exportBtn">Backup</button>
-  <button id="importBtn">Restore</button>
-  <button id="reloadBtn" aria-label="Refresh">⟳</button>
-  <input id="importFile" type="file" accept="application/json,.json" hidden>
-</div>
 
 <script>
 const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-01-01", "dateMax": "2035-12-31", "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}]};
@@ -346,13 +345,15 @@ function syncInputs(){
 }
 
 // ---- table ----
+// 累計（total）の色分けの説明：各月の見出しの右側に表示
+const LEGEND = `<span class="legend"><span style="--sw:var(--bg-low)">30%−</span><span style="--sw:var(--bg-b)">10%+</span><span style="--sw:var(--bg-y)">20%+</span><span style="--sw:var(--bg-r)">30%+</span></span>`;
 const timeOpts = '<option value="">—</option>' + CFG.times.map(t => `<option value="${t.m}">${t.label}</option>`).join("");
 function buildRows(){
   makeDays();
   let html = "", lastMonth = "";
   DAYS.forEach(([date, wd, hol]) => {
     const mk = date.slice(0,7);
-    if (mk !== lastMonth){ lastMonth = mk; html += `<tr class="month"><td colspan="4">${MONTHS[Number(mk.slice(5))-1]} ${mk.slice(0,4)}</td></tr>`; }
+    if (mk !== lastMonth){ lastMonth = mk; html += `<tr class="month"><td colspan="4"><div class="mrow"><span>${MONTHS[Number(mk.slice(5))-1]} ${mk.slice(0,4)}</span>${LEGEND}</div></td></tr>`; }
     const cls = hol ? "hol" : wd===5 ? "w5" : wd===6 ? "w6" : "";
     html += `<tr id="r${date}" class="${date===todayISO?"today":""}">
       <td class="${cls}">${md(date)}<span class="dw">${WD[wd]}${hol?" Hol":""}</span></td>
