@@ -110,6 +110,8 @@ table{width:100%;border-collapse:collapse;background:var(--sheet)}
 thead th{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--sheet);font-size:12px;font-weight:500;color:var(--sub);
   text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)}
 thead th:first-child{text-align:left}
+/* iPhone の画面上部（時計・電池の表示の下）に、スクロールした表の一部が透けて見えないようにする */
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--paper);z-index:20}
 td{padding:2px 8px;border-bottom:1px solid var(--rule);text-align:right;height:34px}
 td:first-child{text-align:left;white-space:nowrap}
 tr.today td{background:var(--fill-soft)}
@@ -422,8 +424,13 @@ function jumpToday(){
   const idx = DAYS.findIndex(d => d[0] === t);
   const row = document.getElementById("r" + DAYS[Math.max(0, idx - 2)][0]);
   if (!row) return;
-  const head = document.querySelector("thead").offsetHeight;
-  window.scrollTo({ top: Math.max(0, row.getBoundingClientRect().top + window.scrollY - head - 4) });
+  const thead = document.querySelector("thead");
+  window.scrollTo({ top: Math.max(0, row.getBoundingClientRect().top + window.scrollY - thead.offsetHeight) });
+  // 見出しが画面上部に固定された位置を実測して、行の上端をぴったり合わせる（iPhone の上部の余白にも対応）
+  requestAnimationFrame(() => {
+    const gap = row.getBoundingClientRect().top - thead.querySelector("th").getBoundingClientRect().bottom;
+    if (Math.abs(gap) > 1) window.scrollBy(0, gap);
+  });
 }
 document.getElementById("todayBtn").addEventListener("click", jumpToday);
 
