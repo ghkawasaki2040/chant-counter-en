@@ -36,14 +36,13 @@ body{margin:0;background:var(--paper);color:var(--ink);
 h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600;
   font-size:20px;letter-spacing:.04em;margin:2px 2px 6px}
 .panel{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:8px 12px;margin-bottom:8px}
-.facts{display:grid;grid-template-columns:1.45fr 1fr;gap:6px 10px;margin:0}
-.facts div{display:flex;align-items:baseline;gap:6px;min-width:0}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:6px 8px;margin:0}
+.facts div{display:flex;align-items:baseline;gap:4px;min-width:0}
 .facts .wide{grid-column:1/-1}
-.facts .lb{width:2.6em}
 .facts dt{color:var(--sub);font-size:13px;white-space:nowrap}
 .facts dd{margin:0;font-weight:600}
-.facts input[type=date]{font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);
-  border:1px solid var(--rule);border-radius:6px;padding:1px 4px;min-height:30px;width:100%;min-width:0}
+.facts input[type=date]{font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:var(--paper);
+  border:1px solid var(--rule);border-radius:6px;padding:0 3px;min-height:28px;width:100%;min-width:0;letter-spacing:-.02em}
 .facts dd{flex:1;min-width:0}
 .gauge-head b small{font-family:system-ui,-apple-system,sans-serif;font-size:14px}
 .target{display:flex;align-items:baseline;gap:2px}
@@ -62,7 +61,7 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .pitem .l1{display:block;font-size:14px;font-weight:600}
 .pitem .l2{display:block;font-size:12px;color:var(--sub)} .pitem .l2 b{color:var(--ink)}
 .tsel{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap}
-.tsel select{width:6.8em;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:2px 2px}
+.tsel select{width:auto;min-width:7.6em;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:2px 2px}
 .tsel input{width:6em;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:transparent;border:0;border-bottom:1px dashed var(--rule);padding:0 2px}
 .tc-h{font-size:12px;color:var(--sub);margin-top:10px}
 .tc{display:grid;grid-template-columns:repeat(6,1fr);row-gap:2px;margin-top:2px;text-align:center}
@@ -88,8 +87,8 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .bars{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 8px;margin:6px 0 0}
 .bars .scale{display:flex;justify-content:space-between;margin-top:-2px}
 .bl{font-size:11px;color:var(--sub);white-space:nowrap}
-.track{position:relative;display:flex;gap:0;height:22px;padding:2px;border:2px dashed var(--rule);border-radius:6px}
-.tbar{height:14px;padding:0 4px;border-left:2px solid transparent;border-right:2px solid transparent}
+.track{position:relative;display:flex;gap:0;height:18px}
+.tbar{height:14px}
 .tbar div{position:relative;height:100%;background:var(--empty);border-radius:3px;overflow:hidden}
 .tbar i{position:absolute;inset:0 auto 0 0;width:0;background:var(--tcolor);border-radius:3px;transition:width .5s ease-out}
 .seg{position:relative;height:100%;background:var(--empty);overflow:hidden}
@@ -146,11 +145,11 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 
   <section class="panel">
     <dl class="facts num">
-      <div><dt class="lb">Start:</dt><dd><input id="start" type="date" min="2026-01-01" max="2035-12-31" aria-label="Start date"></dd></div>
+      <div><dt>Start:</dt><dd><input id="start" type="date" min="2026-01-01" max="2035-12-31" aria-label="Start date"></dd></div>
+      <div><dt>End:</dt><dd><input id="end" type="date" min="2026-01-01" max="2035-12-31" aria-label="End date"></dd></div>
       <div><dt>Total days:</dt><dd id="totalDays"></dd></div>
-      <div><dt class="lb">End:</dt><dd><input id="end" type="date" min="2026-01-01" max="2035-12-31" aria-label="End date"></dd></div>
       <div><dt>Countdown:</dt><dd id="countdown"></dd></div>
-      <div class="wide"><dt>Target:</dt><dd class="target tsel"><select id="targetSel" aria-label="Target chants"></select><input id="target" type="text" inputmode="numeric" aria-label="Target chants" hidden> chants</dd></div>
+      <div class="wide"><dt>Target:</dt><dd class="target tsel"><select id="targetSel" aria-label="Target chants"></select> chants</dd></div>
     </dl>
     <div class="plan-h">Target time</div>
     <div class="plan" id="plan"></div>
@@ -171,7 +170,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
     <span class="bl">Target</span>
     <div class="tbar"><div><i id="tfill"></i></div></div>
     <span></span>
-    <div style="padding:0 4px"><div class="scale num"><span>0</span><span></span><span id="scaleMax"></span></div></div>
+    <div><div class="scale num"><span>0</span><span></span><span id="scaleMax"></span></div></div>
     </div>
   </section>
 
@@ -289,33 +288,33 @@ startIn.addEventListener("change", changePeriod);
 endIn.addEventListener("change", changePeriod);
 
 // ---- target（プルダウン＋手入力、上限 = min(50,000 × 日数, 5,000,000)）----
-const TMSG = { max: m => "The maximum target is " + m + " (50,000 per day × days in the period, up to 5,000,000).", clamp: m => "The target was changed to the maximum of " + m + " to fit the period length." };
-const tgt = document.getElementById("target"), tSel = document.getElementById("targetSel");
+const TMSG = { max: m => "The maximum target is " + m + " (50,000 per day × days in the period, up to 5,000,000).", clamp: m => "The target was changed to the maximum of " + m + " to fit the period length.", prompt: m => "Enter the target (max " + m + ")" };
+const tSel = document.getElementById("targetSel");
 const periodDays = () => dayDiff(P().start, P().end) + 1;
 const targetMax = () => Math.min(CFG.targetMax, CFG.dailyMax * periodDays());
 function showTarget(){
   const max = targetMax(), t = P().target;
-  tSel.innerHTML = CFG.targets.map(v => `<option value="${v}" ${v > max ? "disabled" : ""}>${fmt(v)}</option>`).join("") +
-    `<option value="other">Other</option>`;
-  const inList = CFG.targets.includes(t);
-  tSel.value = inList ? String(t) : "other";
-  tgt.hidden = inList; tgt.value = fmt(t);
+  const list = CFG.targets.includes(t) ? CFG.targets : [...CFG.targets, t].sort((a,b) => a - b);
+  tSel.innerHTML = list.map(v => `<option value="${v}" ${v > max ? "disabled" : ""}>${fmt(v)}</option>`).join("") +
+    `<option value="other">Other…</option>`;
+  tSel.value = String(t);
 }
 function clampTarget(notify){
   const max = targetMax();
   if (P().target > max) { P().target = max; if (notify) alert(TMSG.clamp(fmt(max))); }
 }
 tSel.addEventListener("change", () => {
-  if (tSel.value === "other") { tgt.hidden = false; tgt.focus(); return; }
+  if (tSel.value === "other") {
+    const max = targetMax();
+    const ans = prompt(TMSG.prompt(fmt(max)), String(P().target));
+    const v = ans == null ? 0 : Number(String(ans).replace(/[^0-9]/g, ""));
+    if (v > 0) {
+      if (v > max) alert(TMSG.max(fmt(max)));
+      P().target = Math.min(v, max); save(); refresh();
+    }
+    showTarget(); return;
+  }
   P().target = Number(tSel.value); save(); showTarget(); refresh();
-});
-tgt.addEventListener("focus", () => { tgt.value = String(P().target); });
-tgt.addEventListener("blur", () => { tgt.value = fmt(P().target); });
-tgt.addEventListener("change", () => {
-  const v = Number(tgt.value.replace(/[^0-9]/g,"")), max = targetMax();
-  if (v > max) alert(TMSG.max(fmt(max)));
-  if (v > 0) { P().target = Math.min(v, max); save(); refresh(); }
-  showTarget();
 });
 clampTarget(false);
 showTarget();
