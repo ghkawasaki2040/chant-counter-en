@@ -61,6 +61,14 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .pitem.cur{background:var(--fill-soft)}
 .pitem .l1{display:block;font-size:14px;font-weight:600}
 .pitem .l2{display:block;font-size:12px;color:var(--sub)} .pitem .l2 b{color:var(--ink)}
+.tsel{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap}
+.tsel select{width:6.8em;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:2px 2px}
+.tsel input{width:6em;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:transparent;border:0;border-bottom:1px dashed var(--rule);padding:0 2px}
+.tc-h{font-size:12px;color:var(--sub);margin-top:10px}
+.tc{display:grid;grid-template-columns:repeat(6,1fr);row-gap:2px;margin-top:2px;text-align:center}
+.tc span{font-size:12px;color:var(--sub);padding-top:2px}
+.tc b{font-size:16px;font-weight:600;padding-bottom:4px;border-bottom:1px solid var(--rule)}
+.tc b.z{color:var(--sub);font-weight:400}
 .plan-h{font-size:12px;color:var(--sub);margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
 .plan{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:2px}
 .plan .ph{font-size:11px;line-height:1.2;color:var(--sub);text-align:center;padding-bottom:6px}
@@ -80,11 +88,12 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .bars{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 8px;margin:6px 0 0}
 .bars .scale{display:flex;justify-content:space-between;margin-top:-2px}
 .bl{font-size:11px;color:var(--sub);white-space:nowrap}
-.track{position:relative;display:flex;gap:3px;height:22px;padding:2px;border:2px dashed var(--rule);border-radius:6px}
+.track{position:relative;display:flex;gap:0;height:22px;padding:2px;border:2px dashed var(--rule);border-radius:6px}
 .tbar{height:14px;padding:0 4px;border-left:2px solid transparent;border-right:2px solid transparent}
 .tbar div{position:relative;height:100%;background:var(--empty);border-radius:3px;overflow:hidden}
 .tbar i{position:absolute;inset:0 auto 0 0;width:0;background:var(--tcolor);border-radius:3px;transition:width .5s ease-out}
-.seg{position:relative;height:100%;background:var(--empty);border-radius:3px;overflow:hidden}
+.seg{position:relative;height:100%;background:var(--empty);overflow:hidden}
+.seg.s1{border-radius:3px 0 0 3px} .seg.s4{border-radius:0 3px 3px 0}
 .seg i{position:absolute;inset:0 auto 0 0;width:0;transition:width .5s ease-out}
 .seg.s1 i{background:var(--c-blue)} .seg.s2 i{background:var(--c-yellow)} .seg.s3 i{background:var(--c-red)}
 .seg.s4 i{background:linear-gradient(135deg,#F4DC8A,#C99A2E 55%,#E9C865)}
@@ -137,14 +146,16 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 
   <section class="panel">
     <dl class="facts num">
-      <div><dt class="lb">Start:</dt><dd><input id="start" type="date" aria-label="Start date"></dd></div>
+      <div><dt class="lb">Start:</dt><dd><input id="start" type="date" min="2026-01-01" max="2035-12-31" aria-label="Start date"></dd></div>
       <div><dt>Total days:</dt><dd id="totalDays"></dd></div>
-      <div><dt class="lb">End:</dt><dd><input id="end" type="date" aria-label="End date"></dd></div>
+      <div><dt class="lb">End:</dt><dd><input id="end" type="date" min="2026-01-01" max="2035-12-31" aria-label="End date"></dd></div>
       <div><dt>Countdown:</dt><dd id="countdown"></dd></div>
-      <div class="wide"><dt>Target:</dt><dd class="target"><input id="target" type="text" inputmode="numeric" aria-label="Target chants"> chants</dd></div>
+      <div class="wide"><dt>Target:</dt><dd class="target tsel"><select id="targetSel" aria-label="Target chants"></select><input id="target" type="text" inputmode="numeric" aria-label="Target chants" hidden> chants</dd></div>
     </dl>
     <div class="plan-h">Target time</div>
     <div class="plan" id="plan"></div>
+    <div class="tc-h">1day.time count</div>
+    <div class="tc num" id="tcount" aria-label="Days by daily time"></div>
   </section>
 
   <section class="panel" aria-label="Progress">
@@ -183,7 +194,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 </div>
 
 <script>
-const CFG = {"start": "2026-09-29", "end": "2026-12-31", "target": 1000000, "perHour": 3400, "plan": {"mon": 5, "tue": 3, "wed": 5, "thu": 3, "fri": 7, "sat": 3, "sun": 2, "hol": 2}, "hours": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}]};
+const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-01-01", "dateMax": "2035-12-31", "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}]};
 const KEY = "chant-counter-en-v1";
 const WD = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -196,7 +207,14 @@ const hTxt = h => String(h).replace(/\.0$/,"") + "h";
 const newPeriod = (o = {}) => ({ start: o.start || CFG.start, end: o.end || CFG.end,
   target: o.target || CFG.target, plan: {...CFG.plan, ...(o.plan || {})} });
 function upgrade(s){
-  if (s.unit !== "m") { const e = {}; Object.entries(s.entries||{}).forEach(([k,v]) => e[k] = Math.round(v*60)); s.entries = e; s.unit = "m"; }
+  const vals = Object.values(s.entries || {});
+  // 「時間」で保存していた旧版だけを分に変換（値がすべて12以下なら時間とみなす）
+  if (s.unit !== "m" && vals.length && vals.every(v => v <= 12)) {
+    const e = {}; Object.entries(s.entries).forEach(([k,v]) => e[k] = Math.round(v*60)); s.entries = e;
+  }
+  s.unit = "m";
+  // 誤って60倍になった記録を元に戻す（12h = 720分を超える値は60倍の誤り）
+  Object.entries(s.entries || {}).forEach(([k,v]) => { if (v > 720 && v % 60 === 0) s.entries[k] = v / 60; });
   if (!s.target && s.targetMan) s.target = s.targetMan * 10000;
   delete s.targetMan;
   if (s.plan && s.plan.weh != null) { s.plan.sat = s.plan.sun = s.plan.hol = s.plan.weh; delete s.plan.weh; }
@@ -204,7 +222,7 @@ function upgrade(s){
 }
 function periodize(s){
   if (!Array.isArray(s.periods) || !s.periods.length) { s.periods = [newPeriod(s)]; s.cur = 0; }
-  const periods = s.periods.slice(0, 99).map(p => newPeriod(p));
+  const periods = s.periods.slice(0, CFG.maxPeriods).map(p => newPeriod(p));
   let cur = Number(s.cur); if (!(cur >= 0 && cur < periods.length)) cur = periods.length - 1;
   return { unit:"m", entries: s.entries || {}, periods, cur };
 }
@@ -263,21 +281,49 @@ function changePeriod(){
   const reset = () => { startIn.value = P().start; endIn.value = P().end; };
   if (!s || !e) return reset();
   if (s > e) { alert("Start must be on or before End."); return reset(); }
-  if (dayDiff(s,e) > 730) { alert("Please keep the period within 2 years."); return reset(); }
-  P().start = s; P().end = e; save(); buildRows(); refresh(); jumpToday();
+  if (s < CFG.dateMin || e > CFG.dateMax) { alert("Please choose dates between 2026/1/1 and 2035/12/31."); return reset(); }
+  if (dayDiff(s,e) + 1 > CFG.maxDays) { alert("A period can be up to 185 days."); return reset(); }
+  P().start = s; P().end = e; clampTarget(true); save(); buildRows(); refresh(); jumpToday();
 }
 startIn.addEventListener("change", changePeriod);
 endIn.addEventListener("change", changePeriod);
 
-const tgt = document.getElementById("target");
-const showTarget = () => tgt.value = fmt(P().target);
-showTarget();
+// ---- target（プルダウン＋手入力、上限 = min(50,000 × 日数, 5,000,000)）----
+const TMSG = { max: m => "The maximum target is " + m + " (50,000 per day × days in the period, up to 5,000,000).", clamp: m => "The target was changed to the maximum of " + m + " to fit the period length." };
+const tgt = document.getElementById("target"), tSel = document.getElementById("targetSel");
+const periodDays = () => dayDiff(P().start, P().end) + 1;
+const targetMax = () => Math.min(CFG.targetMax, CFG.dailyMax * periodDays());
+function showTarget(){
+  const max = targetMax(), t = P().target;
+  tSel.innerHTML = CFG.targets.map(v => `<option value="${v}" ${v > max ? "disabled" : ""}>${fmt(v)}</option>`).join("") +
+    `<option value="other">Other</option>`;
+  const inList = CFG.targets.includes(t);
+  tSel.value = inList ? String(t) : "other";
+  tgt.hidden = inList; tgt.value = fmt(t);
+}
+function clampTarget(notify){
+  const max = targetMax();
+  if (P().target > max) { P().target = max; if (notify) alert(TMSG.clamp(fmt(max))); }
+}
+tSel.addEventListener("change", () => {
+  if (tSel.value === "other") { tgt.hidden = false; tgt.focus(); return; }
+  P().target = Number(tSel.value); save(); showTarget(); refresh();
+});
 tgt.addEventListener("focus", () => { tgt.value = String(P().target); });
-tgt.addEventListener("blur", showTarget);
-tgt.addEventListener("change", () => { const v = Number(tgt.value.replace(/[^0-9]/g,"")); if (v > 0){ P().target = v; save(); refresh(); } showTarget(); });
+tgt.addEventListener("blur", () => { tgt.value = fmt(P().target); });
+tgt.addEventListener("change", () => {
+  const v = Number(tgt.value.replace(/[^0-9]/g,"")), max = targetMax();
+  if (v > max) alert(TMSG.max(fmt(max)));
+  if (v > 0) { P().target = Math.min(v, max); save(); refresh(); }
+  showTarget();
+});
+clampTarget(false);
+showTarget();
 
 document.getElementById("plan").innerHTML = PLAN_ITEMS.map(([k,l]) =>
   `<label>${l}<select data-plan="${k}" aria-label="${l} target time">${CFG.hours.map(h=>`<option value="${h}">${hTxt(h)}</option>`).join("")}</select></label>`).join("");
+const fitPlan = h => CFG.hours.includes(h) ? h : CFG.hours.find(x => x >= h) || CFG.hours[CFG.hours.length-1];
+state.periods.forEach(p => Object.keys(p.plan).forEach(k => p.plan[k] = fitPlan(Number(p.plan[k]))));
 document.querySelectorAll("select[data-plan]").forEach(s => {
   s.value = String(P().plan[s.dataset.plan]);
   s.addEventListener("change", () => { P().plan[s.dataset.plan] = Number(s.value); save(); refresh(); });
@@ -345,6 +391,15 @@ function refresh(){
   });
   document.getElementById("tfill").style.width = Math.min(100, prog / P().target * 100) + "%";
   document.getElementById("scaleMax").textContent = fmt(P().target);
+  // 1day.time count：期間内の各日の時間を 1h〜12h に分類（1h未満は数えない、0.5h は切り上げ）
+  const tc = Array(13).fill(0);
+  DAYS.forEach(d => { const m = state.entries[d[0]] || 0; if (m >= 60) tc[Math.min(12, Math.ceil(m / 60))]++; });
+  let tcHtml = "";
+  [[1,6],[7,12]].forEach(([a,b]) => {
+    for (let h = a; h <= b; h++) tcHtml += `<span>${h}h</span>`;
+    for (let h = a; h <= b; h++) tcHtml += `<b class="${tc[h] ? "" : "z"}">${tc[h]}</b>`;
+  });
+  document.getElementById("tcount").innerHTML = tcHtml;
   renderPeriods();
 }
 document.getElementById("rows").addEventListener("change", e => {
@@ -389,7 +444,7 @@ fileIn.addEventListener("change", async () => {
 });
 
 // ---- 期間の切り替え・一覧 ----
-const PL = { no: n => "Period " + n, goal: "Target: ", list: "Periods", max: "Up to 99 periods can be saved.", last: "The only period cannot be deleted.", delc: n => "Delete Period " + n + "? Your records (time entries) will not be deleted." };
+const PL = { no: n => "Period " + n, goal: "Target: ", list: "Periods", max: "Up to 120 periods can be saved.", last: "The only period cannot be deleted.", delc: n => "Delete Period " + n + "? Your records (time entries) will not be deleted." };
 const ymdS = s => Number(s.slice(0,4)) + "/" + Number(s.slice(5,7)) + "/" + Number(s.slice(8));
 function periodSum(p){
   let t = 0;
@@ -417,11 +472,15 @@ document.getElementById("periodList").addEventListener("click", e => {
   const b = e.target.closest(".pitem"); if (b) { switchPeriod(Number(b.dataset.i)); window.scrollTo({top:0}); }
 });
 document.getElementById("addPeriod").addEventListener("click", () => {
-  if (state.periods.length >= 99) { alert(PL.max); return; }
+  if (state.periods.length >= CFG.maxPeriods) { alert(PL.max); return; }
   const last = state.periods.reduce((a,p) => p.end > a.end ? p : a);
   const s = parse(last.end); s.setDate(s.getDate() + 1);
-  const e = new Date(s); e.setDate(e.getDate() + Math.min(730, Math.max(0, dayDiff(last.start, last.end))));
-  state.periods.push(newPeriod({ start: iso(s), end: iso(e), target: P().target, plan: {...P().plan} }));
+  if (iso(s) > CFG.dateMax) { alert("No period can be added after 2035/12/31."); return; }
+  const e = new Date(s); e.setDate(e.getDate() + Math.min(CFG.maxDays - 1, Math.max(0, dayDiff(last.start, last.end))));
+  const end = iso(e) > CFG.dateMax ? CFG.dateMax : iso(e);
+  const np = newPeriod({ start: iso(s), end, target: P().target, plan: {...P().plan} });
+  np.target = Math.min(np.target, Math.min(CFG.targetMax, CFG.dailyMax * (dayDiff(np.start, np.end) + 1)));
+  state.periods.push(np);
   switchPeriod(state.periods.length - 1);
 });
 document.getElementById("delPeriod").addEventListener("click", () => {
