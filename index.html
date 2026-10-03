@@ -239,7 +239,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 
 
 <script>
-const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-09-01", "dateMax": "2027-11-30", "useEnd": "2027-11-30", "codes": [{"hash": "7a7fc9b3", "until": "2026-10-31"}], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}], "version": "25"};
+const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-09-01", "dateMax": "2027-11-30", "useEnd": "2027-11-30", "codes": [{"hash": "7a7fc9b3", "until": "2026-10-31"}], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}], "version": "26"};
 const KEY = "chant-counter-en-v1";
 
 // ---- 更新前の自動の控え：新しい版で初めて開いたとき、保存データを書き換える前に控えを残す ----
@@ -249,7 +249,7 @@ const KEY = "chant-counter-en-v1";
     if (raw && prev !== CFG.version) {
       const n = new Date(), p = x => String(x).padStart(2, "0");
       const at = n.getFullYear() + "/" + p(n.getMonth()+1) + "/" + p(n.getDate()) + " " + p(n.getHours()) + ":" + p(n.getMinutes());
-      localStorage.setItem(KEY + "-snap", JSON.stringify({ at, data: raw }));
+      localStorage.setItem(KEY + "-snap", JSON.stringify({ at, ts: n.getTime(), data: raw }));
     }
     localStorage.setItem(VKEY, CFG.version);
   } catch(e) {}
@@ -382,11 +382,13 @@ const BK = {
     "\"Restore\" replaces all current records and settings with the backup. Records entered after the backup was made will be lost.",
     "Before restoring, back up the current state as well, so you can go back to it if needed.",
     "When changing phones, make a backup on the old phone and use \"Restore\" on the new phone.",
-    "The app also automatically keeps a copy of your records just before it is updated. If something goes wrong after an update, you can return to that copy below.",
+    "The app also automatically keeps a copy of your records just before it is updated. If something goes wrong after an update, you can return to that copy below (available for 7 days after the update).",
   ],
   snap: "Copy before the last update: ", snapBtn: "Return to this state",
-  snapConfirm: "Return the records to the state before the last update? Records entered after the update will be lost.",
+  snapConfirm: (at, n) => "Return the records to the state of " + at + " (before the update)?\n" +
+    "Records entered after that" + (n > 0 ? " (" + n + " days)" : "") + " will be lost.\nWe recommend making a \"Backup\" first.",
   snapNone: "There is no copy from before an update yet.",
+  snapOld: "The copy from before the update is only available for 7 days after the update.",
 };
 
 // ---- データのバックアップと復元について（説明と、更新前の控えに戻すボタン）----
@@ -398,9 +400,15 @@ const BK = {
   try { snap = JSON.parse(localStorage.getItem(KEY + "-snap") || "null"); } catch(e) {}
   const box = $("snapBox");
   if (!snap) { box.textContent = BK.snapNone; return; }
+  // 控えの日時（古い控えは表示用の日時から計算）
+  const ts = snap.ts || (() => { const m = String(snap.at).match(/(\d+)\/(\d+)\/(\d+) (\d+):(\d+)/);
+    return m ? new Date(+m[1], m[2]-1, +m[3], +m[4], +m[5]).getTime() : Date.now(); })();
+  const d0 = new Date(ts), now = new Date();
+  const days = Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(d0.getFullYear(), d0.getMonth(), d0.getDate())) / 86400000);
+  if (days > 7) { box.textContent = BK.snapOld; return; }          // 更新から7日を過ぎたらボタンを表示しない
   box.innerHTML = `<span>${BK.snap}${snap.at}</span><button id="snapBtn">${BK.snapBtn}</button>`;
   $("snapBtn").addEventListener("click", () => {
-    if (!confirm(BK.snapConfirm)) return;
+    if (!confirm(BK.snapConfirm(snap.at, days))) return;
     try { localStorage.setItem(KEY, snap.data); } catch(e) {}
     location.reload();
   });
