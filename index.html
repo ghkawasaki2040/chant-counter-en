@@ -145,7 +145,7 @@ td.tot.oy{background:var(--bg-y);color:var(--ink)} td.tot.or{background:var(--bg
 .gerr{color:#C62828;font-size:13px;min-height:1.2em;margin:8px 0 0}
 body.locked{overflow:hidden}
 .notice{max-width:520px;margin:10px auto 0;font-size:12px;color:var(--sub)}
-.notice summary{cursor:pointer;text-align:center}
+.notice summary{cursor:pointer;text-align:center;color:#E07A10;font-weight:600}
 .notice ul{color:var(--sub);font-size:12px;margin-top:6px}
 select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--fill);outline-offset:2px}
 /* ボタン：iPhone で位置がずれないよう、画面に固定せず表のすぐ上に置く */
@@ -306,8 +306,13 @@ const GATE = {
   let ok = false;
   try {
     ok = !!localStorage.getItem(AKEY);
-    // この更新の前から使っている人は、そのまま使えるようにする
-    if (!ok && localStorage.getItem(KEY)) { localStorage.setItem(AKEY, JSON.stringify({ at: "existing" })); ok = true; }
+    // この更新の前から使っている人（記録が入っている人）は、そのまま使えるようにする
+    if (!ok) {
+      let has = false;
+      try { const o = JSON.parse(localStorage.getItem(KEY) || "null");
+            has = !!o && ((o.entries && Object.keys(o.entries).length > 0) || (o.days && Object.keys(o.days).length > 0)); } catch(e) {}
+      if (has) { localStorage.setItem(AKEY, JSON.stringify({ at: "existing" })); ok = true; }
+    }
   } catch(e) {}
   if (ok) return;
   const gate = $("gate"); gate.hidden = false; document.body.classList.add("locked");
