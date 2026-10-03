@@ -146,6 +146,18 @@ td.tot.oy{background:var(--bg-y);color:var(--ink)} td.tot.or{background:var(--bg
 body.locked{overflow:hidden}
 .notice{max-width:520px;margin:10px auto 0;font-size:12px;color:var(--sub)}
 .notice summary{cursor:pointer;text-align:center;color:#E07A10;font-weight:600}
+.notice.bk{margin-top:4px}
+.notice.bk summary{color:var(--ink)}
+.snap{margin:8px 0 0;font-size:12px;color:var(--sub);text-align:center}
+.snap button{font:inherit;font-size:13px;margin-left:6px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:14px;padding:3px 10px}
+[hidden]{display:none !important}
+/* 使用期限が過ぎたときの画面 */
+.expired{position:fixed;inset:0;z-index:110;background:var(--paper);display:flex;align-items:center;justify-content:center;padding:24px}
+.expired .gbox{text-align:center}
+.expired p{font-size:15px;margin:0 0 8px}
+.expired small{display:block;font-size:12px;color:var(--sub);margin-bottom:14px}
+.expired button{font:inherit;font-size:16px;font-weight:700;color:#fff;background:#1D2A3A;border:0;border-radius:10px;padding:10px 24px}
+
 .notice ul{color:var(--sub);font-size:12px;margin-top:6px}
 select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--fill);outline-offset:2px}
 /* ボタン：iPhone で位置がずれないよう、画面に固定せず表のすぐ上に置く */
@@ -157,6 +169,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 </style>
 </head>
 <body>
+<div id="expired" class="expired" hidden><div class="gbox"><p id="xMsg"></p><small id="xSub"></small><button id="xBtn" class="xb"></button></div></div>
 <div id="gate" class="gate" hidden><div class="gbox">
   <h2 id="gTitle"></h2><ul id="gList"></ul><p class="ghint" id="gHint"></p>
   <label class="glab"><span id="gLabel"></span><input id="gPass" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
@@ -174,8 +187,8 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 
   <section class="panel">
     <dl class="facts num">
-      <div class="dcell"><dt>Start:</dt><dd><input id="start" type="date" min="2026-01-01" max="2035-12-31" aria-label="Start date"></dd></div>
-      <div class="dcell"><dt>End:</dt><dd><input id="end" type="date" min="2026-01-01" max="2035-12-31" aria-label="End date"></dd></div>
+      <div class="dcell"><dt>Start:</dt><dd><input id="start" type="date" min="2026-09-01" max="2027-11-30" aria-label="Start date"></dd></div>
+      <div class="dcell"><dt>End:</dt><dd><input id="end" type="date" min="2026-09-01" max="2027-11-30" aria-label="End date"></dd></div>
       <div><dt>Total days:</dt><dd id="totalDays"></dd></div>
       <div><dt>Countdown:</dt><dd id="countdown"></dd></div>
       <div class="wide"><dt>Target:</dt><dd class="target tsel"><select id="targetSel" aria-label="Target chants"></select> chants</dd></div>
@@ -221,12 +234,26 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   </div>
   <p class="note">Records are saved only on this phone. Use "Backup" before changing phones.</p>
   <details class="notice"><summary id="nSum"></summary><ul id="nList"></ul></details>
+  <details class="notice bk"><summary id="bSum"></summary><ul id="bList"></ul><div class="snap" id="snapBox"></div></details>
 </div>
 
 
 <script>
-const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-01-01", "dateMax": "2035-12-31", "codes": [{"hash": "7a7fc9b3", "until": "2026-10-31"}], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}]};
+const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-09-01", "dateMax": "2027-11-30", "useEnd": "2027-11-30", "codes": [{"hash": "7a7fc9b3", "until": "2026-10-31"}], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}], "version": "25"};
 const KEY = "chant-counter-en-v1";
+
+// ---- 更新前の自動の控え：新しい版で初めて開いたとき、保存データを書き換える前に控えを残す ----
+(function(){
+  try {
+    const VKEY = KEY + "-ver", raw = localStorage.getItem(KEY), prev = localStorage.getItem(VKEY);
+    if (raw && prev !== CFG.version) {
+      const n = new Date(), p = x => String(x).padStart(2, "0");
+      const at = n.getFullYear() + "/" + p(n.getMonth()+1) + "/" + p(n.getDate()) + " " + p(n.getHours()) + ":" + p(n.getMinutes());
+      localStorage.setItem(KEY + "-snap", JSON.stringify({ at, data: raw }));
+    }
+    localStorage.setItem(VKEY, CFG.version);
+  } catch(e) {}
+})();
 const WD = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const PLAN_ITEMS = [["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],["fri","Fri"],["sat","Sat"],["sun","Sun"],["hol","Hol"]];
@@ -280,6 +307,7 @@ const wdMon = d => (d.getDay()+6)%7;
 const GATE = {
   title: "Before you use this app",
   items: [
+    "This app is available for a pre-period from 2026/9/1 to 2027/11/30. It cannot be used after this period.",
     "This app is for invited guests only. Please do not share the URL or password.",
     "This app is provided free of charge, without any guarantee of its operation or the accuracy of its calculations. Please use it at your own discretion and risk.",
     "Your records are saved only on your phone and are never sent anywhere. The creator cannot see your records.",
@@ -292,6 +320,9 @@ const GATE = {
   hint: "First add this app to your Home Screen (Safari share button → Add to Home Screen), then enter the password in the app opened from the Home Screen icon.",
   label: "Password", button: "Agree and start",
   wrong: "The password is incorrect.", closed: "Registration for new users has closed.",
+  expired: d => "This app's period of use ended on " + d + ".",
+  expiredSub: "You can still save your records with the button below.",
+  expiredBtn: "Backup",
 };
 
 // ---- 初回のパスワード入力（受付期限つき）----
@@ -302,6 +333,18 @@ const GATE = {
   $("gTitle").textContent = GATE.title; $("nSum").textContent = GATE.title;
   $("gList").innerHTML = li; $("nList").innerHTML = li;
   $("gHint").textContent = GATE.hint; $("gLabel").textContent = GATE.label; $("gBtn").textContent = GATE.button;
+
+  // 使用期限（プレ期間の終了日）を過ぎたら、使えない画面を表示（バックアップだけはできる）
+  {
+    const n = new Date(), t = n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") + "-" + String(n.getDate()).padStart(2,"0");
+    if (t > CFG.useEnd) {
+      const x = $("expired"); x.hidden = false; document.body.classList.add("locked");
+      $("xMsg").textContent = GATE.expired(CFG.useEnd.replace(/-/g, "/"));
+      $("xSub").textContent = GATE.expiredSub; $("xBtn").textContent = GATE.expiredBtn;
+      $("xBtn").addEventListener("click", () => { const b = document.getElementById("exportBtn"); if (b) b.click(); });
+      return;
+    }
+  }
   const AKEY = KEY + "-auth";
   let ok = false;
   try {
@@ -329,6 +372,38 @@ const GATE = {
   };
   $("gBtn").addEventListener("click", tryPass);
   $("gPass").addEventListener("keydown", e => { if (e.key === "Enter") tryPass(); });
+})();
+const BK = {
+  title: "About data backup and restore",
+  items: [
+    "Your records are saved only on this phone. They may be lost if you delete the app, clear Safari's history, or change phones.",
+    "\"Backup\" saves all your records and settings at that moment to a file. Keep the file in the Files app, or send it to yourself by email or LINE.",
+    "We recommend making a backup at milestones, such as the end of each month or before the app is updated.",
+    "\"Restore\" replaces all current records and settings with the backup. Records entered after the backup was made will be lost.",
+    "Before restoring, back up the current state as well, so you can go back to it if needed.",
+    "When changing phones, make a backup on the old phone and use \"Restore\" on the new phone.",
+    "The app also automatically keeps a copy of your records just before it is updated. If something goes wrong after an update, you can return to that copy below.",
+  ],
+  snap: "Copy before the last update: ", snapBtn: "Return to this state",
+  snapConfirm: "Return the records to the state before the last update? Records entered after the update will be lost.",
+  snapNone: "There is no copy from before an update yet.",
+};
+
+// ---- データのバックアップと復元について（説明と、更新前の控えに戻すボタン）----
+(function(){
+  const $ = id => document.getElementById(id);
+  $("bSum").textContent = BK.title;
+  $("bList").innerHTML = BK.items.map(t => `<li>${t}</li>`).join("");
+  let snap = null;
+  try { snap = JSON.parse(localStorage.getItem(KEY + "-snap") || "null"); } catch(e) {}
+  const box = $("snapBox");
+  if (!snap) { box.textContent = BK.snapNone; return; }
+  box.innerHTML = `<span>${BK.snap}${snap.at}</span><button id="snapBtn">${BK.snapBtn}</button>`;
+  $("snapBtn").addEventListener("click", () => {
+    if (!confirm(BK.snapConfirm)) return;
+    try { localStorage.setItem(KEY, snap.data); } catch(e) {}
+    location.reload();
+  });
 })();
 
 // ---- Japanese public holidays (auto) ----
@@ -369,7 +444,7 @@ function changePeriod(){
   const reset = () => { startIn.value = P().start; endIn.value = P().end; };
   if (!s || !e) return reset();
   if (s > e) { alert("Start must be on or before End."); return reset(); }
-  if (s < CFG.dateMin || e > CFG.dateMax) { alert("Please choose dates between 2026/1/1 and 2035/12/31."); return reset(); }
+  if (s < CFG.dateMin || e > CFG.dateMax) { alert("Please choose dates between 2026/9/1 and 2027/11/30."); return reset(); }
   if (dayDiff(s,e) + 1 > CFG.maxDays) { alert("A period can be up to 185 days."); return reset(); }
   P().start = s; P().end = e; clampTarget(true); save(); buildRows(); refresh(); jumpToday();
 }
@@ -541,7 +616,7 @@ fileIn.addEventListener("change", async () => {
   try {
     const s = JSON.parse(await f.text());
     if (!s || typeof s.entries !== "object") throw new Error();
-    if (!confirm("Replace the current records with this backup?")) return;
+    if (!confirm("Restoring replaces all current records and settings with the backup. Records entered after the backup was made will be lost. If needed, tap Cancel and back up the current state first. Do you want to restore?")) return;
     state = periodize(upgrade(s));
     save(); syncInputs(); buildRows(); refresh(); jumpToday(); alert("Restored.");
   } catch(e) { alert("This file cannot be read. Please choose a .json file saved with Backup."); }
@@ -580,7 +655,7 @@ document.getElementById("addPeriod").addEventListener("click", () => {
   if (state.periods.length >= CFG.maxPeriods) { alert(PL.max); return; }
   const last = state.periods.reduce((a,p) => p.end > a.end ? p : a);
   const s = parse(last.end); s.setDate(s.getDate() + 1);
-  if (iso(s) > CFG.dateMax) { alert("No period can be added after 2035/12/31."); return; }
+  if (iso(s) > CFG.dateMax) { alert("No period can be added after 2027/11/30."); return; }
   const e = new Date(s); e.setDate(e.getDate() + Math.min(CFG.maxDays - 1, Math.max(0, dayDiff(last.start, last.end))));
   const end = iso(e) > CFG.dateMax ? CFG.dateMax : iso(e);
   const np = newPeriod({ start: iso(s), end, target: P().target, plan: {...P().plan} });
