@@ -73,6 +73,23 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .tc span{font-size:12px;color:var(--sub);padding-top:2px}
 .tc b{font-size:16px;font-weight:600;padding-bottom:4px;border-bottom:1px solid var(--rule)}
 .tc b.z{color:var(--sub);font-weight:400}
+.tabs{display:flex;gap:6px;margin:0 0 8px}
+.tabs button{flex:1;font:inherit;font-size:15px;font-weight:600;color:var(--sub);background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:7px 0}
+.tabs button.on{color:var(--paper);background:var(--ink);border-color:var(--ink)}
+.yrange{display:flex;align-items:center;justify-content:space-between;gap:4px;flex-wrap:nowrap}
+.yrange span{display:flex;align-items:baseline;gap:2px;white-space:nowrap}
+.yrange small{font-size:12px;color:var(--sub);margin:0 3px 0 1px}
+.yrange select{font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:2px 0;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
+.yrange select[id$="Y"]{width:3.4em} .yrange select[id$="M"]{width:2.2em}
+.yrange .sep{color:var(--sub)}
+.yspan{font-size:12px;color:var(--sub);text-align:center;margin-top:6px}
+.plan-h.yl-h{border-top:0;padding-top:0;margin-top:0}
+.yitem{padding:6px 0;border-top:1px solid var(--rule)}
+.yitem:first-child{border-top:0}
+.yitem .l1{display:block;font-size:14px;font-weight:600}
+.yitem .l2{display:block;font-size:12px;color:var(--sub)}
+.yitem .l2 b{color:var(--ink)}
+.ynone{font-size:13px;color:var(--sub)}
 .plan-panel .plan-h{margin-top:0;padding-top:0;border-top:0}
 .plan-h{font-size:12px;color:var(--sub);margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
 .plan{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:2px}
@@ -87,7 +104,7 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .gauge-head b small{font-size:14px;font-weight:600}
 .gauge-head b span{font-size:inherit;color:inherit}
 .gauge-head em{font-style:normal;font-size:14px;font-weight:600;color:var(--goal)}
-.gauge-head #pct{margin-left:auto;font-size:18px;font-weight:700;color:var(--ink)}
+.gauge-head #pct,.gauge-head #yPct{margin-left:auto;font-size:18px;font-weight:700;color:var(--ink)}
 .gauge-head b{font-size:22px;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600}
 .gauge-head span{font-size:13px;color:var(--sub)}
 .bars{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 8px;margin:6px 0 0}
@@ -180,7 +197,9 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 </div></div>
 <div class="wrap">
   <h1>chant counter</h1>
+  <div class="tabs" role="tablist"><button id="tabP" class="on" role="tab">Period</button><button id="tabY" role="tab">Yearly</button></div>
 
+  <div id="viewP">
   <section class="panel period">
     <select id="periodSel" aria-label="Select period"></select>
     <div class="prow"><span class="psum num" id="plistSummary"></span>
@@ -232,6 +251,42 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
     <thead><tr><th>Calendar</th><th>time</th><th>count</th><th>total</th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
+  </div>
+  </div>
+
+  <div id="viewY" hidden>
+  <section class="panel">
+    <div class="yrange num">
+      <span><select id="yFromY" aria-label="From year"></select><small>Year</small><select id="yFromM" aria-label="From month"></select><small>Month</small></span>
+      <span class="sep">〜</span>
+      <span><select id="yToY" aria-label="To year"></select><small>Year</small><select id="yToM" aria-label="To month"></select><small>Month</small></span>
+    </div>
+    <div class="yspan num" id="ySpan"></div>
+  </section>
+
+  <section class="panel">
+    <div class="gauge-head num"><b><small>Current: </small><span id="yCurrent">0</span></b><span id="yPct">–</span></div>
+    <div class="gauge-sub num"><span>Total days: <b id="yDays">0</b></span><span>Target (prorated): <b id="yTarget">0</b></span></div>
+    <div class="gauge-sub num"><span>Progress target: <b id="yProg">0</b></span><span>1 day target: <b id="yDaily">0</b></span></div>
+    <div class="bars">
+    <span class="bl">Actual</span>
+    <div class="track" id="yTrack">
+      <div class="seg s1" style="flex:30"><i></i></div><div class="seg s2" style="flex:30"><i></i></div>
+      <div class="seg s3" style="flex:30"><i></i></div><div class="seg s4" style="flex:10"><i></i><b>★</b></div>
+      </div>
+    <span class="bl">Target</span>
+    <div class="tbar"><div><i id="yTfill"></i></div></div>
+    <span></span>
+    <div><div class="scale num"><span>0</span><span></span><span id="yScaleMax"></span></div></div>
+    </div>
+    <div class="tc-h">1day.time count</div>
+    <div class="tc num" id="yTcount"></div>
+  </section>
+
+  <section class="panel">
+    <div class="plan-h yl-h">Periods in this range</div>
+    <div id="yList"></div>
+  </section>
   </div>
   <p class="note">Records are saved only on this phone. Use "Backup" before changing phones.</p>
   <details class="notice"><summary id="nSum"></summary><ul id="nList"></ul></details>
@@ -579,20 +634,7 @@ function refresh(){
   document.getElementById("tfill").style.width = Math.min(100, prog / P().target * 100) + "%";
   document.getElementById("scaleMax").textContent = fmt(P().target);
   // 1day.time count：0.5h・1h・1.5h・2h・3h…9h・10h~ に切り捨てで分類（30分未満は数えない）
-  const TCB = ["0.5h","1h","1.5h","2h","3h","4h","5h","6h","7h","8h","9h","10h~"];
-  const tc = Array(TCB.length).fill(0);
-  DAYS.forEach(d => {
-    const m = state.entries[d[0]] || 0;
-    if (m < 30) return;
-    const k = m < 60 ? 0 : m < 90 ? 1 : m < 120 ? 2 : m < 600 ? Math.floor(m / 60) + 1 : 11;
-    tc[k]++;
-  });
-  let tcHtml = "";
-  [[0,5],[6,11]].forEach(([a,b]) => {
-    for (let k = a; k <= b; k++) tcHtml += `<span>${TCB[k]}</span>`;
-    for (let k = a; k <= b; k++) tcHtml += `<b class="${tc[k] ? "" : "z"}">${tc[k]}</b>`;
-  });
-  document.getElementById("tcount").innerHTML = tcHtml;
+  document.getElementById("tcount").innerHTML = tcGridHtml(DAYS.map(d => d[0]));
   renderPeriods();
 }
 document.getElementById("rows").addEventListener("change", e => {
@@ -600,6 +642,102 @@ document.getElementById("rows").addEventListener("change", e => {
   if (s.value) state.entries[s.dataset.date] = Number(s.value); else delete state.entries[s.dataset.date];
   save(); refresh();
 });
+
+// 1day.time count：0.5h・1h・1.5h・2h・3h…9h・10h~ に切り捨てで分類（30分未満は数えない）
+const TCB = ["0.5h","1h","1.5h","2h","3h","4h","5h","6h","7h","8h","9h","10h~"];
+function tcGridHtml(dates){
+  const tc = Array(TCB.length).fill(0);
+  dates.forEach(date => {
+    const m = state.entries[date] || 0;
+    if (m < 30) return;
+    tc[m < 60 ? 0 : m < 90 ? 1 : m < 120 ? 2 : m < 600 ? Math.floor(m / 60) + 1 : 11]++;
+  });
+  let h = "";
+  [[0,5],[6,11]].forEach(([a,b]) => {
+    for (let k = a; k <= b; k++) h += `<span>${TCB[k]}</span>`;
+    for (let k = a; k <= b; k++) h += `<b class="${tc[k] ? "" : "z"}">${tc[k]}</b>`;
+  });
+  return h;
+}
+
+// ---- 年間（年月の範囲で集計）----
+const YL = {
+  badRange: "The start must be on or before the end.",
+  none: "No periods in this range.",
+  inRange: "In range: ",
+};
+const yFromY = document.getElementById("yFromY"), yFromM = document.getElementById("yFromM");
+const yToY = document.getElementById("yToY"), yToM = document.getElementById("yToM");
+(function(){
+  const y0 = Number(CFG.dateMin.slice(0,4)), y1 = Number(CFG.dateMax.slice(0,4));
+  const yo = Array.from({length: y1 - y0 + 1}, (_, i) => `<option value="${y0+i}">${y0+i}</option>`).join("");
+  const mo = Array.from({length: 12}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join("");
+  yFromY.innerHTML = yo; yToY.innerHTML = yo; yFromM.innerHTML = mo; yToM.innerHTML = mo;
+  let r = null;
+  try { r = JSON.parse(localStorage.getItem(KEY + "-yr") || "null"); } catch(e) {}
+  const ty = Math.min(y1, Math.max(y0, Number(todayISO.slice(0,4))));
+  r = r || { fy: ty, fm: 1, ty: ty, tm: 12 };
+  yFromY.value = r.fy; yFromM.value = r.fm; yToY.value = r.ty; yToM.value = r.tm;
+})();
+[yFromY, yFromM, yToY, yToM].forEach(el => el.addEventListener("change", () => {
+  try { localStorage.setItem(KEY + "-yr", JSON.stringify({ fy: +yFromY.value, fm: +yFromM.value, ty: +yToY.value, tm: +yToM.value })); } catch(e) {}
+  renderYear();
+}));
+function renderYear(){
+  const fy = +yFromY.value, fm = +yFromM.value, ty = +yToY.value, tm = +yToM.value;
+  const rs = fy + "-" + pad(fm) + "-01";
+  const re = iso(new Date(ty, tm, 0));                    // 終了月の月末
+  if (rs > re) { document.getElementById("ySpan").textContent = YL.badRange; return; }
+  document.getElementById("ySpan").textContent = ymdS(rs) + " 〜 " + ymdS(re);
+  const dates = []; for (let d = parse(rs); iso(d) <= re; d.setDate(d.getDate()+1)) dates.push(iso(d));
+  let chants = 0;
+  dates.forEach(date => { const m = state.entries[date] || 0; if (m && date <= todayISO) chants += countOf(m); });
+  // 期間の target を日数で按分して、範囲内の日数分だけ合計
+  let target = 0, prog = 0, listHtml = "";
+  state.periods.forEach((p, i) => {
+    const a = p.start > rs ? p.start : rs, b = p.end < re ? p.end : re;
+    if (a > b) return;
+    const pd = dayDiff(p.start, p.end) + 1, per = p.target / pd, ov = dayDiff(a, b) + 1;
+    target += per * ov;
+    const pe = b < todayISO ? b : todayISO;
+    if (pe >= a) prog += per * (dayDiff(a, pe) + 1);
+    let min = 0, ch = 0;
+    for (let d = parse(a); iso(d) <= b; d.setDate(d.getDate()+1)) {
+      const m = state.entries[iso(d)] || 0; if (m && iso(d) <= todayISO) { min += m; ch += countOf(m); }
+    }
+    listHtml += `<div class="yitem"><span class="l1 num">${PL.no(i+1)}　${ymdS(p.start)}〜${ymdS(p.end)}</span>` +
+      `<span class="l2 num">${YL.inRange}${ymdS(a)}〜${ymdS(b)}　<b>${(min/60).toFixed(1).replace(/\.0$/,"")}h</b>　<b>${fmt(ch)}</b> chants</span></div>`;
+  });
+  const days = dates.length;
+  document.getElementById("yList").innerHTML = listHtml || `<div class="ynone">${YL.none}</div>`;
+  document.getElementById("yCurrent").textContent = fmt(chants);
+  document.getElementById("yPct").textContent = target > 0 ? Math.round(chants / target * 100) + "%" : "–";
+  document.getElementById("yDays").textContent = days;
+  document.getElementById("yTarget").textContent = fmt(target);
+  document.getElementById("yProg").textContent = fmt(prog);
+  document.getElementById("yDaily").textContent = fmt(days ? target / days : 0);
+  const pct = target > 0 ? chants / target * 100 : 0;
+  [[0,30],[30,60],[60,90],[90,100]].forEach(([a,b], k) => {
+    const seg = document.querySelectorAll("#yTrack .seg")[k];
+    const w = Math.max(0, Math.min(1, (pct - a) / (b - a)));
+    seg.querySelector("i").style.width = (w*100) + "%";
+    seg.classList.toggle("done", w >= 1);
+  });
+  document.getElementById("yTfill").style.width = (target > 0 ? Math.min(100, prog / target * 100) : 0) + "%";
+  document.getElementById("yScaleMax").textContent = fmt(target);
+  document.getElementById("yTcount").innerHTML = tcGridHtml(dates);
+}
+// ---- 期間／年間の切り替え ----
+function showView(v){
+  document.getElementById("viewP").hidden = v !== "P";
+  document.getElementById("viewY").hidden = v !== "Y";
+  document.getElementById("tabP").classList.toggle("on", v === "P");
+  document.getElementById("tabY").classList.toggle("on", v === "Y");
+  window.scrollTo({ top: 0 });
+  if (v === "Y") renderYear(); else requestAnimationFrame(jumpToday);
+}
+document.getElementById("tabP").addEventListener("click", () => showView("P"));
+document.getElementById("tabY").addEventListener("click", () => showView("Y"));
 
 // ---- jump to today ----
 function jumpToday(){
