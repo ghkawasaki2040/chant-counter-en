@@ -86,13 +86,15 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .tc b.z{color:var(--sub);font-weight:400}
 /* 曜日別の実施時間（実績・目標） */
 .wk{margin-top:2px}
-.wkg{display:grid;align-items:baseline;text-align:center}
+.wkg{display:grid;column-gap:3px;align-items:baseline;text-align:center}
+#wkcount{margin-top:4px}
+.wkh{display:flex;justify-content:space-between;align-items:baseline}
+.wkl{font-size:11px;color:var(--sub)} .wkl b{color:var(--ink)}
 .wk span{font-size:12px;color:var(--sub);padding:2px 0}
 .wk .sa{color:var(--sat)} .wk .su{color:var(--sun)}
-.wk .rl{font-size:11px;color:var(--sub);text-align:left;padding-right:4px;white-space:nowrap}
-.wk b{font-size:clamp(11px,3.4vw,14px);font-weight:700;white-space:nowrap;letter-spacing:-.02em;padding:2px 0}
+.wk b{font-size:clamp(12px,3.9vw,16px);font-weight:700;white-space:nowrap;letter-spacing:-.02em;padding:2px 0}
 .wk b.z{color:var(--sub);font-weight:400}
-.wk i{font-style:normal;font-size:clamp(10px,3vw,12px);color:var(--sub);white-space:nowrap;letter-spacing:-.02em;padding:2px 0 4px;border-bottom:1px solid var(--rule)}
+.wk i{font-style:normal;font-size:clamp(10px,3.2vw,13px);color:var(--sub);white-space:nowrap;letter-spacing:-.02em;padding:2px 0 4px;border-bottom:1px solid var(--rule)}
 .tabs{display:flex;gap:6px;margin:0 0 8px}
 .tabs button{flex:1;font:inherit;font-size:15px;font-weight:600;color:var(--sub);background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:7px 0}
 .tabs button.on{color:var(--paper);background:var(--ink);border-color:var(--ink)}
@@ -115,6 +117,7 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .plan{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:2px}
 .plan .ph{font-size:11px;line-height:1.2;color:var(--sub);text-align:center;padding-bottom:6px}
 .plan label{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--sub);white-space:nowrap}
+.plan label.sa{color:var(--sat)} .plan label.su{color:var(--sun)}
 .plan select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:4px 0;width:100%;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
 /* 達成度グラフ */
 .gauge-head{display:flex;align-items:baseline;gap:8px}
@@ -253,9 +256,8 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   </section>
 
   <section class="panel plan-panel">
-    <div class="plan-h">Target time</div>
+    <div class="plan-h">Weekday target / Actual / Total target</div>
     <div class="plan" id="plan"></div>
-    <div class="tc-h">Time by weekday</div>
     <div class="wk num" id="wkcount"></div>
     <div class="tc-h">1day.time count</div>
     <div class="tc num" id="tcount" aria-label="Days by daily time"></div>
@@ -301,7 +303,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
     <span></span>
     <div><div class="scale num"><span>0</span><span></span><span id="yScaleMax"></span></div></div>
     </div>
-    <div class="tc-h">Time by weekday</div>
+    <div class="tc-h">Actual by weekday / Total target</div>
     <div class="wk num" id="yWk"></div>
     <div class="tc-h">1day.time count</div>
     <div class="tc num" id="yTcount"></div>
@@ -319,7 +321,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 
 
 <script>
-const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-09-01", "dateMax": "2031-12-31", "useEnd": "2031-12-31", "codes": [{"hash": "988aa2be", "dom": 1}, {"hash": "a483f9dd", "dom": 2}, {"hash": "b88657f0", "dom": 3}, {"hash": "c49336c7", "dom": 4}, {"hash": "a0953cb2", "dom": 5}, {"hash": "b48d0d69", "dom": 6}, {"hash": "a090bf84", "dom": 7}, {"hash": "b4750883", "dom": 8}, {"hash": "98771b06", "dom": 9}, {"hash": "26b3df86", "dom": 10}, {"hash": "4ab1d99b", "dom": 11}, {"hash": "56afade8", "dom": 12}, {"hash": "32ad36a5", "dom": 13}, {"hash": "56a99dba", "dom": 14}, {"hash": "32a72677", "dom": 15}, {"hash": "46a5075c", "dom": 16}, {"hash": "2aa29cb1", "dom": 17}, {"hash": "56c7b2ce", "dom": 18}, {"hash": "2ac52ef3", "dom": 19}, {"hash": "ea1ce141", "dom": 20}, {"hash": "c61ee72c", "dom": 21}, {"hash": "ba2112df", "dom": 22}, {"hash": "e62396ba", "dom": 23}, {"hash": "da123ab5", "dom": 24}, {"hash": "be15e038", "dom": 25}, {"hash": "da184ae3", "dom": 26}, {"hash": "be1a5d66", "dom": 27}, {"hash": "da304fc9", "dom": 28}, {"hash": "c6326ee4", "dom": 29}, {"hash": "6d857e3c", "dom": 30}, {"hash": "51831391", "dom": 31}], "regEnd": "2027-11-30", "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}], "version": "40"};
+const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-09-01", "dateMax": "2031-12-31", "useEnd": "2031-12-31", "codes": [{"hash": "988aa2be", "dom": 1}, {"hash": "a483f9dd", "dom": 2}, {"hash": "b88657f0", "dom": 3}, {"hash": "c49336c7", "dom": 4}, {"hash": "a0953cb2", "dom": 5}, {"hash": "b48d0d69", "dom": 6}, {"hash": "a090bf84", "dom": 7}, {"hash": "b4750883", "dom": 8}, {"hash": "98771b06", "dom": 9}, {"hash": "26b3df86", "dom": 10}, {"hash": "4ab1d99b", "dom": 11}, {"hash": "56afade8", "dom": 12}, {"hash": "32ad36a5", "dom": 13}, {"hash": "56a99dba", "dom": 14}, {"hash": "32a72677", "dom": 15}, {"hash": "46a5075c", "dom": 16}, {"hash": "2aa29cb1", "dom": 17}, {"hash": "56c7b2ce", "dom": 18}, {"hash": "2ac52ef3", "dom": 19}, {"hash": "ea1ce141", "dom": 20}, {"hash": "c61ee72c", "dom": 21}, {"hash": "ba2112df", "dom": 22}, {"hash": "e62396ba", "dom": 23}, {"hash": "da123ab5", "dom": 24}, {"hash": "be15e038", "dom": 25}, {"hash": "da184ae3", "dom": 26}, {"hash": "be1a5d66", "dom": 27}, {"hash": "da304fc9", "dom": 28}, {"hash": "c6326ee4", "dom": 29}, {"hash": "6d857e3c", "dom": 30}, {"hash": "51831391", "dom": 31}], "regEnd": "2027-11-30", "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}], "version": "42"};
 const KEY = "chant-counter-en-v1";
 
 // ---- 更新前の自動の控え：新しい版で初めて開いたとき、保存データを書き換える前に控えを残す ----
@@ -583,8 +585,8 @@ tSel.addEventListener("change", () => {
 clampTarget(false);
 showTarget();
 
-document.getElementById("plan").innerHTML = PLAN_ITEMS.map(([k,l]) =>
-  `<label>${l}<select data-plan="${k}" aria-label="${l} target time">${CFG.hours.map(h=>`<option value="${h}">${hTxt(h)}</option>`).join("")}</select></label>`).join("");
+document.getElementById("plan").innerHTML = PLAN_ITEMS.map(([k,l], i) =>
+  `<label class="${["","","","","","sa","su","su"][i]}">${l}<select data-plan="${k}" aria-label="${l} target time">${CFG.hours.map(h=>`<option value="${h}">${hTxt(h)}</option>`).join("")}</select></label>`).join("");
 const fitPlan = h => CFG.hours.includes(h) ? h : CFG.hours.find(x => x >= h) || CFG.hours[CFG.hours.length-1];
 state.periods.forEach(p => Object.keys(p.plan).forEach(k => p.plan[k] = fitPlan(Number(p.plan[k]))));
 document.querySelectorAll("select[data-plan]").forEach(s => {
@@ -660,7 +662,7 @@ function refresh(){
   document.getElementById("scaleMax").textContent = fmt(P().target);
   // 1day.time count：0.5h・1h・1.5h・2h・3h…9h・10h~ に切り捨てで分類（30分未満は数えない）
   document.getElementById("tcount").innerHTML = tcGridHtml(DAYS.map(d => d[0]));
-  document.getElementById("wkcount").innerHTML = wkGridHtml(DAYS.map(d => d[0]), () => P().plan);
+  document.getElementById("wkcount").innerHTML = wkGridHtml(DAYS.map(d => d[0]), () => P().plan, true);
   renderPeriods();
 }
 document.getElementById("rows").addEventListener("change", e => {
@@ -673,9 +675,8 @@ document.getElementById("rows").addEventListener("change", e => {
 const TCB = ["0.5h","1h","1.5h","2h","3h","4h","5h","6h","7h","8h","9h","10h~"];
 // 曜日別の実施時間：planOf(date) はその日の目標時間の設定（なければ null）
 const WKS = ["mon","tue","wed","thu","fri","sat","sun","hol"];
-const WKL = { act: "Actual", tgt: "Target" };
 const hW = m => { const h = m / 60; return (h >= 100 ? Math.round(h) : Math.round(h * 10) / 10) + "h"; };
-function wkGridHtml(dates, planOf){
+function wkGridHtml(dates, planOf, noLabels){
   const act = {}, tgt = {}; WKS.forEach(k => { act[k] = 0; tgt[k] = 0; });
   dates.forEach(date => {
     const k = isHoliday(date) ? "hol" : WKS[wdMon(parse(date))];
@@ -684,16 +685,16 @@ function wkGridHtml(dates, planOf){
   });
   const cls = ["","","","","","sa","su","su"];
   // 1,000時間を超える長い集計のときは、月〜木／金〜祝の2段に分けて表示
-  const two = WKS.some(k => act[k] >= 60000 || tgt[k] >= 60000);
+  const two = !noLabels && WKS.some(k => act[k] >= 60000 || tgt[k] >= 60000);
   const parts = two ? [[0,3],[4,7]] : [[0,7]];
   let h = "";
   parts.forEach(([a,b]) => {
     const ks = WKS.slice(a, b + 1);
-    h += `<span></span>` + PLAN_ITEMS.slice(a, b + 1).map(([k,l], i) => `<span class="${cls[a+i]}">${l}</span>`).join("");
-    h += `<span class="rl">${WKL.act}</span>` + ks.map(k => `<b class="${act[k] ? "" : "z"}">${hW(act[k])}</b>`).join("");
-    h += `<i class="rl">${WKL.tgt}</i>` + ks.map(k => `<i>${hW(tgt[k])}</i>`).join("");
+    if (!noLabels) h += PLAN_ITEMS.slice(a, b + 1).map(([k,l], i) => `<span class="${cls[a+i]}">${l}</span>`).join("");
+    h += ks.map(k => `<b class="${act[k] ? "" : "z"}">${hW(act[k])}</b>`).join("");
+    h += ks.map(k => `<i>${hW(tgt[k])}</i>`).join("");
   });
-  return `<div class="wkg" style="grid-template-columns:auto repeat(${two ? 4 : 8},minmax(0,1fr))">${h}</div>`;
+  return `<div class="wkg" style="grid-template-columns:repeat(${two ? 4 : 8},minmax(0,1fr))">${h}</div>`;
 }
 function tcGridHtml(dates){
   const tc = Array(TCB.length).fill(0);
